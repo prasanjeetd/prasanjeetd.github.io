@@ -24,9 +24,10 @@ body {
 #hero {
   position: relative;
   height: 100vh;
-  margin-top: -64px; /* Remove the extra gap caused by body padding */
+  margin-top: -64px; /* Offset the body padding */
 }
 .hero-bg {
+  position: relative;
   width: 100%;
   height: 100%;
   background-size: cover;
@@ -36,7 +37,16 @@ body {
   align-items: center;
   justify-content: center;
 }
+#effect-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
 .hero-content {
+  position: relative;
   z-index: 1;
 }
 #hero::after {
@@ -51,22 +61,59 @@ body {
 
 /* Sections */
 .section {
-  padding: 80px 0;
+  padding: 30px 0; /* Reduced vertical gap */
 }
 
-/* Outlined sections: vertical separation with top & bottom borders */
+/* Outlined sections with subtle background pattern */
 .outlined-section {
-  border-top: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
-  margin: 20px 0;
+  margin: 5px 0;
+  padding: 15px;
+  border-radius: 8px;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(0, 188, 212, 0.03),
+    rgba(0, 188, 212, 0.03) 5px,
+    transparent 5px,
+    transparent 10px
+  );
 }
 
-/* Section Titles */
+/* Section Heading Highlight Effect */
 .section h2 {
+  position: relative;
+  display: inline-block;
   font-size: 2.5rem;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   color: #333;
 }
+.section h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #00bcd4, #2196f3);
+  transition: width 0.8s ease-out;
+}
+.section h2.aos-animate::after {
+  width: 100%;
+}
+
+/* Section Divider (if used) */
+.section-divider {
+  width: 100%;
+  border-bottom: 2px dotted #00bcd4;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1s ease-out;
+  margin: 10px 0 20px 0;
+}
+.section-divider.aos-animate {
+  transform: scaleX(1);
+}
+
+/* Paragraph styling */
 .section p {
   font-size: 1.1rem;
   line-height: 1.6;
@@ -76,6 +123,29 @@ body {
 .collection .collection-item {
   border: none;
   padding-left: 0;
+}
+
+/* Glowing underline effect for year and skill labels */
+.glow-year,
+.glow-skill {
+  position: relative;
+  color: #00bcd4;
+  font-weight: bold;
+}
+.glow-year::after,
+.glow-skill::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00bcd4, #2196f3);
+  transition: width 0.7s ease;
+}
+.glow-year.aos-animate::after,
+.glow-skill.aos-animate::after {
+  width: 100%;
 }
 
 /* Footer */
@@ -96,5 +166,8 @@ body {
   }
   #hero h5 {
     font-size: 1.2rem;
+  }
+  .section h2 {
+    font-size: 2rem;
   }
 }

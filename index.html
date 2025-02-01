@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Fixed Navbar: Full‑width blue bar with navigation -->
+  <!-- Fixed Navbar -->
   <div class="navbar-fixed">
     <nav class="blue darken-3">
       <div class="nav-wrapper">
@@ -31,8 +31,8 @@
       </div>
     </nav>
   </div>
-
-  <!-- Sidenav for Mobile -->
+  
+  <!-- Mobile Sidenav -->
   <ul class="sidenav" id="mobile-demo">
     <li><a href="#hero">Home</a></li>
     <li><a href="#about">About Me</a></li>
@@ -40,10 +40,12 @@
     <li><a href="#education">Education</a></li>
     <li><a href="#skills">Skills</a></li>
   </ul>
-
-  <!-- Hero Section: Name & Banner -->
+  
+  <!-- Hero Section with Canvas Effect -->
   <section id="hero" class="section scrollspy" data-aos="fade-in">
     <div class="hero-bg" style="background-image: url('hero-bg.jpg');">
+      <!-- Canvas overlay for particle effect (inspired by CodePen: https://codepen.io/thebabydino/pen/XWywJMW) -->
+      <canvas id="effect-canvas"></canvas>
       <div class="hero-content container center-align">
         <h1 class="white-text" data-aos="fade-down">Prasanjeet Debnath</h1>
         <h5 class="white-text" data-aos="fade-up" data-aos-delay="200">
@@ -52,70 +54,67 @@
       </div>
     </div>
   </section>
-
+  
   <!-- About Me Section -->
   <section id="about" class="section scrollspy outlined-section" data-aos="fade-up">
     <div class="container">
       <h2>About Me</h2>
+      <div class="section-divider" data-aos="fade" data-aos-duration="1000"></div>
       <p>
         I am a passionate full stack engineer with over 13 years of experience in designing and developing
         professional, responsive websites that make an impact.
       </p>
     </div>
   </section>
-
+  
   <!-- Experience Section -->
   <section id="experience" class="section scrollspy outlined-section" data-aos="fade-up">
     <div class="container">
       <h2>Experience</h2>
+      <div class="section-divider" data-aos="fade" data-aos-duration="1000"></div>
       <ul class="collection">
-        <li class="collection-item">2011 - 2013: Technoloblis - Desktop Developer</li>
-        <li class="collection-item">2013 - 2015: IdeaToorking</li>
-        <li class="collection-item">2015 - 2017: The Digital Group</li>
-        <li class="collection-item">2017 - 2020: Harman</li>
-        <li class="collection-item">2021 - 2023: Neudeisc</li>
+        <li class="collection-item"><span class="glow-year">2011 - 2013</span>: Technoloblis - Desktop Developer</li>
+        <li class="collection-item"><span class="glow-year">2013 - 2015</span>: IdeaToorking</li>
+        <li class="collection-item"><span class="glow-year">2015 - 2017</span>: The Digital Group</li>
+        <li class="collection-item"><span class="glow-year">2017 - 2020</span>: Harman</li>
+        <li class="collection-item"><span class="glow-year">2021 - 2023</span>: Neudeisc</li>
       </ul>
     </div>
   </section>
-
+  
   <!-- Education Section -->
   <section id="education" class="section scrollspy outlined-section" data-aos="fade-up">
     <div class="container">
       <h2>Education</h2>
+      <div class="section-divider" data-aos="fade" data-aos-duration="1000"></div>
       <ul class="collection">
-        <li class="collection-item">2011: B.Sc</li>
-        <li class="collection-item">2013: M.Sc</li>
+        <li class="collection-item"><span class="glow-year">2011</span>: B.Sc</li>
+        <li class="collection-item"><span class="glow-year">2013</span>: M.Sc</li>
       </ul>
     </div>
   </section>
-
-  <!-- Skills Section -->
+  
+  <!-- Skills Section (using a collection list for consistency) -->
   <section id="skills" class="section scrollspy outlined-section" data-aos="fade-up">
     <div class="container">
       <h2>Skills</h2>
-      <div class="row">
-        <div class="col s12 m6">
-          <ul class="collection">
-            <li class="collection-item"><strong>Backend:</strong> C#, Node.js</li>
-          </ul>
-        </div>
-        <div class="col s12 m6">
-          <ul class="collection">
-            <li class="collection-item"><strong>Frontend:</strong> Angular, React</li>
-            <li class="collection-item"><strong>DevOps:</strong> Terraform, Azure DevOps</li>
-          </ul>
-        </div>
-      </div>
+      <div class="section-divider" data-aos="fade" data-aos-duration="1000"></div>
+      <ul class="collection">
+        <li class="collection-item"><span class="glow-skill">Backend:</span> C#, Node.js</li>
+        <li class="collection-item"><span class="glow-skill">Frontend:</span> Angular, React</li>
+        <li class="collection-item"><span class="glow-skill">DevOps:</span> Terraform, Azure DevOps</li>
+        <li class="collection-item"><span class="glow-skill">Database:</span> MS SQL, Cosmos, Mongo</li>
+      </ul>
     </div>
   </section>
-
+  
   <!-- Footer -->
   <footer class="page-footer blue darken-3">
     <div class="container center-align">
       © 2025 Prasanjeet Debnath. All rights reserved.
     </div>
   </footer>
-
+  
   <!-- Materialize JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <!-- AOS JS -->
