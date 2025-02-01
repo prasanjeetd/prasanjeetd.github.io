@@ -25,6 +25,7 @@ body {
   position: relative;
   height: 100vh;
   margin-top: -64px; /* Offset the body padding */
+  overflow: hidden;
 }
 .hero-bg {
   position: relative;
@@ -37,7 +38,7 @@ body {
   align-items: center;
   justify-content: center;
 }
-#effect-canvas {
+#hero-canvas {
   position: absolute;
   top: 0;
   left: 0;
@@ -48,15 +49,14 @@ body {
 .hero-content {
   position: relative;
   z-index: 1;
+  text-align: center;
+  top: 40%;
+  transform: translateY(-50%);
+  color: #ffffff;
 }
-#hero::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
+.hero-content p {
+  font-size: 1.5rem;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
 }
 
 /* Sections */
@@ -64,7 +64,7 @@ body {
   padding: 30px 0; /* Reduced vertical gap */
 }
 
-/* Outlined sections with subtle background pattern */
+/* Outlined sections (vertical separation with subtle pattern) */
 .outlined-section {
   margin: 5px 0;
   padding: 15px;
@@ -100,7 +100,7 @@ body {
   width: 100%;
 }
 
-/* Section Divider (if used) */
+/* Section Divider */
 .section-divider {
   width: 100%;
   border-bottom: 2px dotted #00bcd4;
@@ -125,7 +125,7 @@ body {
   padding-left: 0;
 }
 
-/* Glowing underline effect for year and skill labels */
+/* Glowing effects for year and skill labels */
 .glow-year,
 .glow-skill {
   position: relative;
@@ -146,6 +146,20 @@ body {
 .glow-year.aos-animate::after,
 .glow-skill.aos-animate::after {
   width: 100%;
+}
+
+/* Fancy Gradient Text for Headings */
+.fancy-text {
+  font-size: clamp(2rem, 6vw + 1rem, 8rem);
+  font-weight: 600;
+  background: linear-gradient(
+    90deg,
+    oklch(36% 0.50 340),
+    oklch(90% 0.5 200)
+  );
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 /* Footer */
