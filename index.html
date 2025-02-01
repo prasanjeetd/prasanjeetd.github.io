@@ -1,151 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Prasanjeet Debnath - Resume</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Portfolio - Prasanjeet Debnath</title>
+  <!-- Materialize CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <!-- AOS Library CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" integrity="sha512-BTVtrFqajT5BlizJFGYgs9/QcUzZmQ0G3s4K8RSj9my3cwkdLxE+nPLqY/6/eE7AMbktQbj6r+4NJ+T/3GLfNg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <style>
-    /* Reset & Base Styles */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f4f4f4;
-      color: #333;
-      line-height: 1.6;
-    }
-    a {
-      color: #333;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-
-    /* Header */
-    header {
-      background: #333;
-      color: #fff;
-      padding: 20px 0;
-      text-align: center;
-      position: fixed;
-      width: 100%;
-      top: 0;
-      z-index: 1000;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-    header h1 {
-      margin: 0;
-      font-size: 1.8rem;
-    }
-
-    /* Main Container */
-    .container {
-      max-width: 900px;
-      margin: 120px auto 20px auto;
-      padding: 0 20px;
-    }
-    
-    /* Section Styles */
-    section {
-      background: #fff;
-      margin-bottom: 20px;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    section h2 {
-      margin-top: 0;
-      border-bottom: 2px solid #333;
-      padding-bottom: 10px;
-      margin-bottom: 15px;
-    }
-    section p, section li {
-      font-size: 1rem;
-    }
-    ul {
-      list-style: none;
-      padding-left: 0;
-    }
-
-    /* Skills Section */
-    .skills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .skill {
-      background: #eee;
-      padding: 10px 15px;
-      border-radius: 5px;
-      font-size: 0.9rem;
-    }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1>Prasanjeet Debnath - Resume</h1>
-  </header>
-
-  <div class="container">
-    <!-- Personal Details -->
-    <section data-aos="fade-up">
-      <h2>Personal Details</h2>
-      <p><strong>Name:</strong> Prasanjeet Debnath</p>
-      <p><strong>Phone:</strong> 9638269676</p>
-      <p><strong>Email:</strong> <a href="mailto:pjeet_4411@hotmail.com">pjeet_4411@hotmail.com</a></p>
-    </section>
-
-    <!-- Experience -->
-    <section data-aos="fade-up">
-      <h2>Experience</h2>
-      <p>13 years experience as a full stack engineer</p>
-    </section>
-
-    <!-- Qualifications -->
-    <section data-aos="fade-up">
-      <h2>Qualifications</h2>
-      <ul>
-        <li>2011: B.Sc</li>
-        <li>2013: M.Sc</li>
-      </ul>
-    </section>
-
-    <!-- Employment History -->
-    <section data-aos="fade-up">
-      <h2>Employment History</h2>
-      <ul>
-        <li>2011-2013: Technoloblis - Desktop Developer</li>
-        <li>2013-2015: IdeaToorking</li>
-        <li>2015-2017: The Digital Group</li>
-        <li>2017-2020: Harman</li>
-        <li>2021-2023: Neudeisc</li>
-      </ul>
-    </section>
-
-    <!-- Skills -->
-    <section data-aos="fade-up">
-      <h2>Skills</h2>
-      <div class="skills">
-        <div class="skill"><strong>Backend:</strong> C#, Node.js</div>
-        <div class="skill"><strong>Database:</strong> MS SQL, Cosmos, Mongo</div>
-        <div class="skill"><strong>Cloud:</strong> AWS, Azure</div>
-        <div class="skill"><strong>Frontend:</strong> Angular, React</div>
-        <div class="skill"><strong>DevOps:</strong> Terraform, Azure DevOps</div>
+  <!-- Fixed Navbar: Full‑width blue bar with navigation -->
+  <div class="navbar-fixed">
+    <nav class="blue darken-3">
+      <div class="nav-wrapper">
+        <a href="#" class="brand-logo" style="padding-left: 20px;">Prasanjeet Debnath</a>
+        <!-- Mobile Menu Trigger -->
+        <a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+        <ul id="nav-mobile" class="right hide-on-med-and-down" style="padding-right: 20px;">
+          <li><a href="#hero">Home</a></li>
+          <li><a href="#about">About Me</a></li>
+          <li><a href="#experience">Experience</a></li>
+          <li><a href="#education">Education</a></li>
+          <li><a href="#skills">Skills</a></li>
+        </ul>
       </div>
-    </section>
+    </nav>
   </div>
 
-  <!-- AOS Library JS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js" integrity="sha512-pj83eicDZ71I7CR3e7nF+04j5VHZdBt3IZZeR5dzL4kzKLGXwulrBBbl1Sbo6NLPpUbZFSU0c2VzEJAvHT4fHw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script>
-    // Initialize AOS animations
-    AOS.init({
-      duration: 1000, // Animation duration in milliseconds
-      once: true      // Whether animation should happen only once on scroll
-    });
-  </script>
+  <!-- Sidenav for Mobile -->
+  <ul class="sidenav" id="mobile-demo">
+    <li><a href="#hero">Home</a></li>
+    <li><a href="#about">About Me</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#education">Education</a></li>
+    <li><a href="#skills">Skills</a></li>
+  </ul>
+
+  <!-- Hero Section: Name & Banner -->
+  <section id="hero" class="section scrollspy" data-aos="fade-in">
+    <div class="hero-bg" style="background-image: url('hero-bg.jpg');">
+      <div class="hero-content container center-align">
+        <h1 class="white-text" data-aos="fade-down">Prasanjeet Debnath</h1>
+        <h5 class="white-text" data-aos="fade-up" data-aos-delay="200">
+          Full Stack Engineer &amp; Software Developer
+        </h5>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Me Section -->
+  <section id="about" class="section scrollspy outlined-section" data-aos="fade-up">
+    <div class="container">
+      <h2>About Me</h2>
+      <p>
+        I am a passionate full stack engineer with over 13 years of experience in designing and developing
+        professional, responsive websites that make an impact.
+      </p>
+    </div>
+  </section>
+
+  <!-- Experience Section -->
+  <section id="experience" class="section scrollspy outlined-section" data-aos="fade-up">
+    <div class="container">
+      <h2>Experience</h2>
+      <ul class="collection">
+        <li class="collection-item">2011 - 2013: Technoloblis - Desktop Developer</li>
+        <li class="collection-item">2013 - 2015: IdeaToorking</li>
+        <li class="collection-item">2015 - 2017: The Digital Group</li>
+        <li class="collection-item">2017 - 2020: Harman</li>
+        <li class="collection-item">2021 - 2023: Neudeisc</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Education Section -->
+  <section id="education" class="section scrollspy outlined-section" data-aos="fade-up">
+    <div class="container">
+      <h2>Education</h2>
+      <ul class="collection">
+        <li class="collection-item">2011: B.Sc</li>
+        <li class="collection-item">2013: M.Sc</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Skills Section -->
+  <section id="skills" class="section scrollspy outlined-section" data-aos="fade-up">
+    <div class="container">
+      <h2>Skills</h2>
+      <div class="row">
+        <div class="col s12 m6">
+          <ul class="collection">
+            <li class="collection-item"><strong>Backend:</strong> C#, Node.js</li>
+          </ul>
+        </div>
+        <div class="col s12 m6">
+          <ul class="collection">
+            <li class="collection-item"><strong>Frontend:</strong> Angular, React</li>
+            <li class="collection-item"><strong>DevOps:</strong> Terraform, Azure DevOps</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="page-footer blue darken-3">
+    <div class="container center-align">
+      © 2025 Prasanjeet Debnath. All rights reserved.
+    </div>
+  </footer>
+
+  <!-- Materialize JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <!-- AOS JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+  <!-- Custom JS -->
+  <script src="script.js"></script>
 </body>
 </html>
