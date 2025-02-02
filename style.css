@@ -23,27 +23,25 @@ body {
 /* Hero Section (Banner) */
 #hero {
   position: relative;
-  height: 100vh;
-  margin-top: -64px; /* Offset fixed navbar */
-  overflow: hidden;
-}
-#hero-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-}
-.hero-content {
-  position: relative;
-  z-index: 1;
+  padding: 0 0 60px 0; /* No top padding so that the hero touches the navbar */
   text-align: center;
-  top: 40%;
-  transform: translateY(-50%);
+  background-color: #202020;
+}
+
+/* Container for the 3D laptop effect */
+#laptopContainer {
+  width: 600px;   /* Adjusted size */
+  height: 400px;
+  margin: 0 auto;
+  background-color: #202020;
+}
+
+/* Hero text content positioned below the 3D object */
+.hero-text {
+  margin-top: 5px;  /* Reduced gap */
   color: #ffffff;
 }
-.hero-content p {
+.hero-text p {
   font-size: 1.5rem;
   text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
 }
@@ -151,6 +149,20 @@ body {
   background-clip: text;
 }
 
+/* Parallax Link with Hover Glow */
+.parallax-link {
+  font-size: 1.2rem;
+  color: #ffffff;
+  text-decoration: none;
+  transition: text-shadow 0.3s ease;
+  margin-top: 20px;
+  display: inline-block;
+}
+
+.parallax-link:hover {
+  text-shadow: 0 0 10px #00bcd4, 0 0 20px #2196f3;
+}
+
 /* Footer */
 .page-footer {
   padding: 20px 0;
@@ -161,14 +173,13 @@ body {
   body {
     padding-top: 56px; /* Mobile fixed nav height */
   }
-  #hero {
-    margin-top: -56px;
+  #laptopContainer {
+    width: 90%;
+    height: auto;
+    margin: 30px auto;
   }
-  #hero h1 {
-    font-size: 2rem;
-  }
-  #hero h5 {
-    font-size: 1.2rem;
+  .hero-text {
+    margin-top: 5px;
   }
   .section h2 {
     font-size: 2rem;
