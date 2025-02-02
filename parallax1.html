@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>3D Laptop with Transparent Fill, Glow & Mouse Interaction</title>
+    <title>3D Laptop with Transparent Fill & Mouse Interaction</title>
     <style>
       /* Center a fixed-size container on the page */
       #laptopContainer {
@@ -59,7 +59,7 @@
       // Scale the laptop up (1.2 times bigger).
       laptopGroup.scale.set(1.2, 1.2, 1.2);
 
-      // Create a fill material that remains fully transparent at all times.
+      // Create a fill material that is fully transparent at all times.
       const fillMaterial = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         transparent: true,
@@ -117,30 +117,6 @@
       laptopGroup.add(screenPivot);
       scene.add(laptopGroup);
 
-      // ----- Glow Effect Setup -----
-      // Create a material for the glow with additive blending.
-      const glowMaterial = new THREE.MeshBasicMaterial({
-        color: 0xffffff,
-        transparent: true,
-        opacity: 0.0,
-        blending: THREE.AdditiveBlending,
-      });
-
-      // Create glow meshes for the base and the screen.
-      const baseGlowMesh = new THREE.Mesh(baseGeometry, glowMaterial);
-      // Slightly enlarge the glow mesh
-      baseGlowMesh.scale.set(1.05, 1.05, 1.05);
-      laptopGroup.add(baseGlowMesh);
-
-      const screenGlowMesh = new THREE.Mesh(screenGeometry, glowMaterial);
-      screenGlowMesh.position.copy(screenMesh.position);
-      screenGlowMesh.scale.set(1.05, 1.05, 1.05);
-      screenPivot.add(screenGlowMesh);
-
-      // Variables for controlling the glow intensity.
-      let targetGlowOpacity = 0;
-      let currentGlowOpacity = 0;
-
       // ----- Interaction Variables -----
       // Variables to control rotation toward the mouse cursor.
       let targetRotationX = 0;
@@ -161,11 +137,9 @@
       });
 
       // ----- Hover Effects -----
+      // For this version, we remove any changes to the fill or border colors on hover.
       container.addEventListener("mouseenter", () => {
         isHovered = true;
-        // No change to the fill; it remains transparent.
-        // Set the glow target opacity.
-        targetGlowOpacity = 0.5;
       });
 
       container.addEventListener("mouseleave", () => {
@@ -173,22 +147,16 @@
         // Reset target rotation.
         targetRotationX = 0;
         targetRotationY = 0;
-        // Remove the glow.
-        targetGlowOpacity = 0;
       });
 
       // ----- Animation Loop -----
       function animate() {
         requestAnimationFrame(animate);
 
-        // Smoothly interpolate the laptop's rotation.
+        // Smoothly interpolate the laptop's rotation toward the target values.
         const transitionSpeed = isHovered ? 0.1 : 0.3;
         laptopGroup.rotation.x += (targetRotationX - laptopGroup.rotation.x) * transitionSpeed;
         laptopGroup.rotation.y += (targetRotationY - laptopGroup.rotation.y) * transitionSpeed;
-
-        // Smoothly update the glow's opacity.
-        currentGlowOpacity += (targetGlowOpacity - currentGlowOpacity) * 0.1;
-        glowMaterial.opacity = currentGlowOpacity;
 
         renderer.render(scene, camera);
       }
