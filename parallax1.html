@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>3D Laptop with Transparent Fill & Mouse Interaction</title>
+    <title>3D Laptop with Green Border on Hover</title>
     <style>
       /* Center a fixed-size container on the page */
       #laptopContainer {
@@ -72,14 +72,14 @@
       const baseMesh = new THREE.Mesh(baseGeometry, fillMaterial);
       laptopGroup.add(baseMesh);
 
-      // Create edges geometry for the base (double border)
+      // Create white double borders for the base.
       const baseEdges = new THREE.EdgesGeometry(baseGeometry);
-      // Outer border (thicker)
+      // Outer white border (thicker)
       const outerBaseLine = new THREE.LineSegments(
         baseEdges,
         new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 4 })
       );
-      // Inner border (thinner)
+      // Inner white border (thinner)
       const innerBaseLine = new THREE.LineSegments(
         baseEdges,
         new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 })
@@ -101,7 +101,7 @@
       screenMesh.position.set(0, 1, 0);
       screenPivot.add(screenMesh);
 
-      // Create edges geometry for the screen (double border)
+      // Create white double borders for the screen.
       const screenEdges = new THREE.EdgesGeometry(screenGeometry);
       const outerScreenLine = new THREE.LineSegments(
         screenEdges,
@@ -116,6 +116,30 @@
 
       laptopGroup.add(screenPivot);
       scene.add(laptopGroup);
+
+      // ----- Extra Green Double Border (for Hover) -----
+      // Create extra border lines (for both base and screen) using the same geometries,
+      // but with green color. These are initially hidden.
+      const greenMaterialOuter = new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 4 });
+      const greenMaterialInner = new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 2 });
+
+      // For the base:
+      const greenOuterBaseLine = new THREE.LineSegments(baseEdges, greenMaterialOuter);
+      greenOuterBaseLine.visible = false;
+      baseMesh.add(greenOuterBaseLine);
+
+      const greenInnerBaseLine = new THREE.LineSegments(baseEdges, greenMaterialInner);
+      greenInnerBaseLine.visible = false;
+      baseMesh.add(greenInnerBaseLine);
+
+      // For the screen:
+      const greenOuterScreenLine = new THREE.LineSegments(screenEdges, greenMaterialOuter);
+      greenOuterScreenLine.visible = false;
+      screenMesh.add(greenOuterScreenLine);
+
+      const greenInnerScreenLine = new THREE.LineSegments(screenEdges, greenMaterialInner);
+      greenInnerScreenLine.visible = false;
+      screenMesh.add(greenInnerScreenLine);
 
       // ----- Interaction Variables -----
       // Variables to control rotation toward the mouse cursor.
@@ -137,27 +161,34 @@
       });
 
       // ----- Hover Effects -----
-      // For this version, we remove any changes to the fill or border colors on hover.
       container.addEventListener("mouseenter", () => {
         isHovered = true;
+        // Show the extra green borders on hover.
+        greenOuterBaseLine.visible = true;
+        greenInnerBaseLine.visible = true;
+        greenOuterScreenLine.visible = true;
+        greenInnerScreenLine.visible = true;
       });
 
       container.addEventListener("mouseleave", () => {
         isHovered = false;
-        // Reset target rotation.
+        // Reset rotation.
         targetRotationX = 0;
         targetRotationY = 0;
+        // Hide the extra green borders when not hovered.
+        greenOuterBaseLine.visible = false;
+        greenInnerBaseLine.visible = false;
+        greenOuterScreenLine.visible = false;
+        greenInnerScreenLine.visible = false;
       });
 
       // ----- Animation Loop -----
       function animate() {
         requestAnimationFrame(animate);
-
         // Smoothly interpolate the laptop's rotation toward the target values.
         const transitionSpeed = isHovered ? 0.1 : 0.3;
         laptopGroup.rotation.x += (targetRotationX - laptopGroup.rotation.x) * transitionSpeed;
         laptopGroup.rotation.y += (targetRotationY - laptopGroup.rotation.y) * transitionSpeed;
-
         renderer.render(scene, camera);
       }
       animate();
