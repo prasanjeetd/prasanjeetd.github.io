@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>3D Laptop with Transparent Fill, Glow & Mouse Interaction</title>
+    <style>
+      /* Center a fixed-size container on the page */
+      #laptopContainer {
+        width: 600px;
+        height: 400px;
+        margin: 50px auto;
+        border: 1px solid #ccc;
+        background-color: #202020;
+        position: relative;
+      }
+      /* Optional: style the body background */
+      body {
+        background-color: #f0f0f0;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Container for our Three.js canvas -->
+    <div id="laptopContainer"></div>
+
+    <!-- Include Three.js from a CDN -->
+    <script src="https://unpkg.com/three@0.153.0/build/three.min.js"></script>
+    <script>
+      // Get container dimensions
+      const container = document.getElementById("laptopContainer");
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      // ----- Scene, Camera, and Renderer Setup -----
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x202020);
+
+      const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+      camera.position.set(0, 2, 6);
+      camera.lookAt(0, 0, 0);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(width, height);
+      container.appendChild(renderer.domElement);
+
+      // ----- Lighting -----
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambientLight);
+
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+      directionalLight.position.set(5, 10, 7.5);
+      scene.add(directionalLight);
+
+      // ----- Laptop Model Creation -----
+      // Create a group to hold the entire laptop.
+      const laptopGroup = new THREE.Group();
+      // Scale the laptop up (1.2 times bigger).
+      laptopGroup.scale.set(1.2, 1.2, 1.2);
+
+      // Create a fill material that remains fully transparent at all times.
+      const fillMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.0, // always fully transparent
+      });
+
+      // --- Laptop Base ---
+      // Dimensions: width 3, thickness 0.1, depth 2.
+      const baseGeometry = new THREE.BoxGeometry(3, 0.1, 2);
+      const baseMesh = new THREE.Mesh(baseGeometry, fillMaterial);
+      laptopGroup.add(baseMesh);
+
+      // Create edges geometry for the base (double border)
+      const baseEdges = new THREE.EdgesGeometry(baseGeometry);
+      // Outer border (thicker)
+      const outerBaseLine = new THREE.LineSegments(
+        baseEdges,
+        new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 4 })
+      );
+      // Inner border (thinner)
+      const innerBaseLine = new THREE.LineSegments(
+        baseEdges,
+        new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 })
+      );
+      baseMesh.add(outerBaseLine);
+      baseMesh.add(innerBaseLine);
+
+      // --- Laptop Screen ---
+      // Create a pivot (hinge) group for the screen.
+      const screenPivot = new THREE.Group();
+      screenPivot.position.set(0, 0.05, -1); // top of the base & back edge
+      // Open the screen by rotating the pivot (about -0.5 radians)
+      screenPivot.rotation.x = -0.5;
+
+      // Screen dimensions: width 3, height 2, thickness 0.1.
+      const screenGeometry = new THREE.BoxGeometry(3, 2, 0.1);
+      const screenMesh = new THREE.Mesh(screenGeometry, fillMaterial);
+      // Position the screen so its bottom aligns with the hinge.
+      screenMesh.position.set(0, 1, 0);
+      screenPivot.add(screenMesh);
+
+      // Create edges geometry for the screen (double border)
+      const screenEdges = new THREE.EdgesGeometry(screenGeometry);
+      const outerScreenLine = new THREE.LineSegments(
+        screenEdges,
+        new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 4 })
+      );
+      const innerScreenLine = new THREE.LineSegments(
+        screenEdges,
+        new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 })
+      );
+      screenMesh.add(outerScreenLine);
+      screenMesh.add(innerScreenLine);
+
+      laptopGroup.add(screenPivot);
+      scene.add(laptopGroup);
+
+      // ----- Glow Effect Setup -----
+      // Create a material for the glow with additive blending.
+      const glowMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending,
+      });
+
+      // Create glow meshes for the base and the screen.
+      const baseGlowMesh = new THREE.Mesh(baseGeometry, glowMaterial);
+      // Slightly enlarge the glow mesh
+      baseGlowMesh.scale.set(1.05, 1.05, 1.05);
+      laptopGroup.add(baseGlowMesh);
+
+      const screenGlowMesh = new THREE.Mesh(screenGeometry, glowMaterial);
+      screenGlowMesh.position.copy(screenMesh.position);
+      screenGlowMesh.scale.set(1.05, 1.05, 1.05);
+      screenPivot.add(screenGlowMesh);
+
+      // Variables for controlling the glow intensity.
+      let targetGlowOpacity = 0;
+      let currentGlowOpacity = 0;
+
+      // ----- Interaction Variables -----
+      // Variables to control rotation toward the mouse cursor.
+      let targetRotationX = 0;
+      let targetRotationY = 0;
+      let isHovered = false;
+
+      // ----- Mouse Movement to Rotate Laptop -----
+      container.addEventListener("mousemove", (event) => {
+        const rect = container.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+        // Normalize relative to container center [-0.5, 0.5]
+        const normalizedX = (mouseX / rect.width) - 0.5;
+        const normalizedY = (mouseY / rect.height) - 0.5;
+        const tiltFactor = 0.4; // maximum tilt in radians
+        targetRotationY = normalizedX * tiltFactor;
+        targetRotationX = -normalizedY * tiltFactor;
+      });
+
+      // ----- Hover Effects -----
+      container.addEventListener("mouseenter", () => {
+        isHovered = true;
+        // No change to the fill; it remains transparent.
+        // Set the glow target opacity.
+        targetGlowOpacity = 0.5;
+      });
+
+      container.addEventListener("mouseleave", () => {
+        isHovered = false;
+        // Reset target rotation.
+        targetRotationX = 0;
+        targetRotationY = 0;
+        // Remove the glow.
+        targetGlowOpacity = 0;
+      });
+
+      // ----- Animation Loop -----
+      function animate() {
+        requestAnimationFrame(animate);
+
+        // Smoothly interpolate the laptop's rotation.
+        const transitionSpeed = isHovered ? 0.1 : 0.3;
+        laptopGroup.rotation.x += (targetRotationX - laptopGroup.rotation.x) * transitionSpeed;
+        laptopGroup.rotation.y += (targetRotationY - laptopGroup.rotation.y) * transitionSpeed;
+
+        // Smoothly update the glow's opacity.
+        currentGlowOpacity += (targetGlowOpacity - currentGlowOpacity) * 0.1;
+        glowMaterial.opacity = currentGlowOpacity;
+
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      // ----- Handle Window Resize (Optional) -----
+      window.addEventListener("resize", () => {
+        const newWidth = container.clientWidth;
+        const newHeight = container.clientHeight;
+        camera.aspect = newWidth / newHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(newWidth, newHeight);
+      });
+    </script>
+  </body>
+</html>
