@@ -1,76 +1,58 @@
+// Initialize Materialize Sidenav, ScrollSpy, and AOS
 document.addEventListener('DOMContentLoaded', function() {
-  // Initialize Materialize ScrollSpy for active navigation highlighting
-  var scrollElems = document.querySelectorAll('.scrollspy');
-  M.ScrollSpy.init(scrollElems, { scrollOffset: 60 });
+  M.Sidenav.init(document.querySelectorAll('.sidenav'));
+  M.ScrollSpy.init(document.querySelectorAll('.scrollspy'), { scrollOffset: 60 });
+  AOS.init({ duration: 1000, once: false });
+});
 
-  // Initialize AOS for smooth scroll animations (triggers on scroll down/up)
-  AOS.init({
-    duration: 1000,
-    once: false
-  });
+// Three.js Setup for Hero Section 3D Object (Technician)
+const canvas = document.getElementById('hero-canvas');
+const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
 
-  // Initialize Materialize Sidenav for mobile navigation
-  var sidenavElems = document.querySelectorAll('.sidenav');
-  M.Sidenav.init(sidenavElems);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1a237e);
 
-  // Canvas Particle Effect (inspired by CodePen: https://codepen.io/thebabydino/pen/XWywJMW)
-  (function() {
-    const canvas = document.getElementById('effect-canvas');
-    const ctx = canvas.getContext('2d');
-    let width, height;
-    
-    function resize() {
-      width = canvas.width = canvas.offsetWidth;
-      height = canvas.height = canvas.offsetHeight;
-    }
-    window.addEventListener('resize', resize);
-    resize();
-    
-    const particles = [];
-    const numParticles = 50;
-    
-    function Particle() {
-      this.x = Math.random() * width;
-      this.y = Math.random() * height;
-      this.radius = Math.random() * 2 + 1;
-      this.vx = Math.random() * 0.5 - 0.25;
-      this.vy = Math.random() * 0.5 - 0.25;
-      this.alpha = Math.random() * 0.5 + 0.5;
-    }
-    
-    Particle.prototype.update = function() {
-      this.x += this.vx;
-      this.y += this.vy;
-      // Wrap around the edges
-      if (this.x < 0) this.x = width;
-      if (this.x > width) this.x = 0;
-      if (this.y < 0) this.y = height;
-      if (this.y > height) this.y = 0;
-    };
-    
-    Particle.prototype.draw = function() {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-      ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
-      ctx.fill();
-    };
-    
-    function initParticles() {
-      for (let i = 0; i < numParticles; i++) {
-        particles.push(new Particle());
-      }
-    }
-    
-    function animateParticles() {
-      ctx.clearRect(0, 0, width, height);
-      particles.forEach(p => {
-        p.update();
-        p.draw();
-      });
-      requestAnimationFrame(animateParticles);
-    }
-    
-    initParticles();
-    animateParticles();
-  })();
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 1.5, 3);
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(5, 10, 7.5);
+scene.add(directionalLight);
+
+// Load Technician 3D Model (Replace 'technician.glb' with your actual model file)
+const loader = new THREE.GLTFLoader();
+loader.load('technician.glb', function(gltf) {
+  const model = gltf.scene;
+  model.scale.set(0.5, 0.5, 0.5);
+  model.position.set(0, -0.5, 0);
+  scene.add(model);
+}, undefined, function(error) {
+  console.error('Error loading the 3D model:', error);
+  // Fallback: Create a simple cube
+  const geometry = new THREE.BoxGeometry();
+  const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+  const cube = new THREE.Mesh(geometry, material);
+  scene.add(cube);
+});
+
+// Animation loop for the 3D scene
+function animate() {
+  requestAnimationFrame(animate);
+  scene.rotation.y += 0.005;
+  renderer.render(scene, camera);
+}
+animate();
+
+// Update canvas size and camera aspect on window resize
+window.addEventListener('resize', function() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  renderer.setSize(width, height);
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
 });
