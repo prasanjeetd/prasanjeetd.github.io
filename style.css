@@ -149,18 +149,23 @@ body {
   background-clip: text;
 }
 
-/* Parallax Link with Hover Glow */
-.parallax-link {
-  font-size: 1.2rem;
-  color: #ffffff;
-  text-decoration: none;
-  transition: text-shadow 0.3s ease;
-  margin-top: 20px;
-  display: inline-block;
+/* Navigation Links in Page Navigation Section */
+.nav-links .collection-item {
+  transition: border-color 0.3s ease;
+  border: 1px solid transparent;
 }
-
-.parallax-link:hover {
+.nav-links .collection-item:hover {
+  border-color: #00bcd4;
+}
+.nav-link {
+  font-size: 1.2rem;
+  color: #00bcd4;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+.nav-link:hover {
   text-shadow: 0 0 10px #00bcd4, 0 0 20px #2196f3;
+  color: #2196f3;
 }
 
 /* Footer */
