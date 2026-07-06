@@ -1,149 +1,315 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Portfolio - Prasanjeet Debnath</title>
-    <!-- Materialize CSS -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
-    />
-    <!-- Material Icons -->
-    <link
-      href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet"
-    />
-    <!-- AOS Library CSS -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css"
-    />
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <!-- Fixed Navbar -->
-    <div class="navbar-fixed">
-      <nav class="blue darken-3">
-        <div class="nav-wrapper">
-          <a href="#" class="brand-logo" style="padding-left: 20px;">Prasanjeet Debnath</a>
-          <!-- Mobile Menu Trigger -->
-          <a href="#" data-target="mobile-demo" class="sidenav-trigger">
-            <i class="material-icons">menu</i>
-          </a>
-          <ul id="nav-mobile" class="right hide-on-med-and-down" style="padding-right:20px;">
-            <li><a href="#hero">Home</a></li>
-            <li><a href="#about">About Me</a></li>
-            <li><a href="#experience">Experience</a></li>
-            <li><a href="#education">Education</a></li>
-            <li><a href="#skills">Skills</a></li>
-          </ul>
-        </div>
-      </nav>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prasanjeet Debnath — Software Architect</title>
+<meta name="description" content="Prasanjeet Debnath — Software Architect specializing in HealthTech, Cloud & Platform Engineering. 14+ years designing and scaling enterprise and healthcare platforms.">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="paper-texture"></div>
+
+<header class="site-header" id="siteHeader">
+  <div class="container header-inner">
+    <a href="#home" class="logo">PD<span class="dot">.</span></a>
+    <nav class="nav-desktop" id="navDesktop">
+      <a href="#about">About</a>
+      <a href="#skills">Skills</a>
+      <a href="#experience">Experience</a>
+      <a href="#projects">Projects</a>
+      <a href="#education">Education</a>
+      <a href="#contact" class="nav-cta">Contact</a>
+    </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <nav class="nav-mobile" id="navMobile">
+    <a href="#about">About</a>
+    <a href="#skills">Skills</a>
+    <a href="#experience">Experience</a>
+    <a href="#projects">Projects</a>
+    <a href="#education">Education</a>
+    <a href="#contact">Contact</a>
+  </nav>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero" id="home">
+    <div class="container hero-inner">
+      <p class="eyebrow reveal">Bangalore, India &mdash; est. 2011</p>
+      <h1 class="hero-title reveal">
+        Prasanjeet<br>
+        <span class="accent-text">Debnath</span>
+      </h1>
+      <p class="hero-subtitle reveal">
+        Software Architect &mdash; HealthTech, Cloud &amp; Platform Engineering
+      </p>
+      <p class="hero-desc reveal">
+        14+ years designing and scaling enterprise and healthcare platforms — across backend
+        services, distributed systems, cloud infrastructure, and legacy modernization.
+      </p>
+      <div class="hero-actions reveal">
+        <a href="#projects" class="btn btn-primary">View Work</a>
+        <a href="#contact" class="btn btn-outline">Get in Touch</a>
+      </div>
+      <div class="hero-links reveal">
+        <a href="https://linkedin.com/in/prasanjeet-debnath" target="_blank" rel="noopener">LinkedIn ↗</a>
+        <a href="https://github.com/prasanjeetd" target="_blank" rel="noopener">GitHub ↗</a>
+        <a href="mailto:pjeet_4411@hotmail.com">Email ↗</a>
+      </div>
     </div>
-    <!-- Mobile Sidenav -->
-    <ul class="sidenav" id="mobile-demo">
-      <li><a href="#hero">Home</a></li>
-      <li><a href="#about">About Me</a></li>
-      <li><a href="#experience">Experience</a></li>
-      <li><a href="#education">Education</a></li>
-      <li><a href="#skills">Skills</a></li>
-    </ul>
+    <div class="scroll-indicator reveal">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
 
-    <!-- Hero Section with 3D Laptop Hover Effect -->
-    <section id="hero" class="section scrollspy" data-aos="fade-in">
-      <!-- Container for the 3D laptop effect -->
-      <div id="laptopContainer"></div>
-      <!-- Hero Text Appearing Below the 3D Object -->
-      <div class="hero-text container center-align">
-        <h1 class="fancy-text" data-aos="fade-down">Engineer at Work</h1>
-        <p data-aos="fade-up" data-aos-delay="200">
-          Crafting Code, Shaping the Future
-        </p>
+  <!-- ABOUT -->
+  <section class="section" id="about">
+    <div class="container">
+      <p class="section-label reveal">01 — About</p>
+      <div class="about-grid">
+        <div class="about-text reveal">
+          <p class="lead">
+            I specialize in production-critical reliability: hunting down elusive latency,
+            race-condition, and stability failures, then re-architecting fragile systems into
+            observable, maintainable ones.
+          </p>
+          <p>
+            Currently architecting Radiology imaging systems at <strong>Philips</strong>, while
+            advancing AI-assisted engineering — RAG, agents, and MCP automation — to accelerate
+            delivery.
+          </p>
+        </div>
+        <div class="about-stats reveal">
+          <div class="stat">
+            <span class="stat-number">14+</span>
+            <span class="stat-label">Years Experience</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number">3</span>
+            <span class="stat-label">Enterprise Platforms</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number">5+</span>
+            <span class="stat-label">Domains Covered</span>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- About Me Section -->
-    <section id="about" class="section scrollspy outlined-section" data-aos="fade-up">
-      <div class="container">
-        <h2 class="fancy-text">About Me</h2>
-        <div class="section-divider" data-aos="fade" data-aos-duration="1000"></div>
-        <p>
-          I am a passionate full stack engineer with over 13 years of experience in designing and
-          developing professional, responsive websites that make an impact.
-        </p>
+  <!-- SKILLS -->
+  <section class="section section-alt" id="skills">
+    <div class="container">
+      <p class="section-label reveal">02 — Core Skills</p>
+      <h2 class="section-title reveal">What I work with</h2>
+      <div class="skills-grid">
+        <div class="skill-card reveal">
+          <h3>Languages</h3>
+          <div class="tags">
+            <span>C#</span><span>.NET</span><span>TypeScript</span><span>JavaScript</span><span>Java</span>
+          </div>
+        </div>
+        <div class="skill-card reveal">
+          <h3>Cloud / DevOps</h3>
+          <div class="tags">
+            <span>AWS</span><span>Azure</span><span>Terraform</span><span>Docker</span><span>Kubernetes</span>
+          </div>
+        </div>
+        <div class="skill-card reveal">
+          <h3>Architecture</h3>
+          <div class="tags">
+            <span>System Design</span><span>Distributed Systems</span><span>Microservices</span><span>API Design</span><span>Modernization</span>
+          </div>
+        </div>
+        <div class="skill-card reveal">
+          <h3>Production Engineering</h3>
+          <div class="tags">
+            <span>Performance Tuning</span><span>Crash Analysis</span><span>Multithreading</span><span>Reliability</span>
+          </div>
+        </div>
+        <div class="skill-card reveal">
+          <h3>Healthcare</h3>
+          <div class="tags">
+            <span>Radiology</span><span>PACS</span><span>DICOM</span><span>Imaging Workflows</span>
+          </div>
+        </div>
+        <div class="skill-card reveal">
+          <h3>AI / Automation</h3>
+          <div class="tags">
+            <span>RAG</span><span>AI Agents</span><span>MCP</span><span>n8n</span><span>Ollama</span><span>Copilot</span>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Experience Section -->
-    <section id="experience" class="section scrollspy outlined-section" data-aos="fade-up">
-      <div class="container">
-        <h2 class="fancy-text">Experience</h2>
-        <div class="section-divider" data-aos="fade" data-aos-duration="1000"></div>
-        <ul class="collection">
-          <li class="collection-item"><span class="glow-year">2011 - 2013</span>: Technoloblis - Desktop Developer</li>
-          <li class="collection-item"><span class="glow-year">2013 - 2015</span>: IdeaToorking</li>
-          <li class="collection-item"><span class="glow-year">2015 - 2017</span>: The Digital Group</li>
-          <li class="collection-item"><span class="glow-year">2017 - 2020</span>: Harman</li>
-          <li class="collection-item"><span class="glow-year">2021 - 2023</span>: Neudeisc</li>
-        </ul>
+  <!-- EXPERIENCE -->
+  <section class="section" id="experience">
+    <div class="container">
+      <p class="section-label reveal">03 — Experience</p>
+      <h2 class="section-title reveal">Where I've built things</h2>
+
+      <div class="timeline">
+        <div class="timeline-item reveal">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <div class="timeline-head">
+              <h3>Software Architect / Senior Engineer</h3>
+              <span class="timeline-date">Mar 2024 – Present</span>
+            </div>
+            <p class="timeline-org">Philips · Bangalore</p>
+            <ul>
+              <li>Architected reliability and observability improvements across PACS / DICOM imaging workflows, cutting troubleshooting time.</li>
+              <li>Collaborated with platform and support teams to resolve production defects, stability issues, and crashes in regulated healthcare environments.</li>
+              <li>Engineered backend and platform services in .NET on AWS, Docker, and Kubernetes, with PowerShell/Bash automation.</li>
+              <li>Led R&amp;D into AI engineering tooling — RAG, AI Agents, MCP, n8n, Ollama — to accelerate developer productivity.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="timeline-item reveal">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <div class="timeline-head">
+              <h3>Sr. Software Consultant II / Associate Architect</h3>
+              <span class="timeline-date">Feb 2021 – Aug 2023</span>
+            </div>
+            <p class="timeline-org">Neudesic (an IBM Company) · Remote</p>
+            <ul>
+              <li>Architected and enhanced healthcare staffing services for AMN Healthcare across recruitment, shift, and workforce-management workflows.</li>
+              <li>Built services with .NET Core, React, Azure, and Service Bus; collaborated on solution design and backend modernization.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="timeline-item reveal">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <div class="timeline-head">
+              <h3>Technical Lead</h3>
+              <span class="timeline-date">Nov 2017 – Jan 2020</span>
+            </div>
+            <p class="timeline-org">Harman · Pune</p>
+            <ul>
+              <li>Led reverse-engineering and migration of legacy business logic into modern architectures, reducing technical risk.</li>
+              <li>Designed full-stack systems across C#, .NET Core, Angular, AWS, Redux, Grails, Spring; collaborated on performance tuning and integration.</li>
+            </ul>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Education Section -->
-    <section id="education" class="section scrollspy outlined-section" data-aos="fade-up">
-      <div class="container">
-        <h2 class="fancy-text">Education</h2>
-        <div class="section-divider" data-aos="fade" data-aos-duration="1000"></div>
-        <ul class="collection">
-          <li class="collection-item"><span class="glow-year">2011</span>: B.Sc</li>
-          <li class="collection-item"><span class="glow-year">2013</span>: M.Sc</li>
-        </ul>
+  <!-- PROJECTS -->
+  <section class="section section-alt" id="projects">
+    <div class="container">
+      <p class="section-label reveal">04 — Selected Projects</p>
+      <h2 class="section-title reveal">Things I've shipped</h2>
+      <div class="projects-grid">
+        <article class="project-card reveal">
+          <div class="project-tag">Healthcare · Neudesic</div>
+          <h3>AMN Healthcare</h3>
+          <p>Delivered staffing and workforce-management features; raised technical quality through cleaner solution structure.</p>
+          <div class="tags">
+            <span>.NET Core</span><span>React</span><span>Azure</span><span>Service Bus</span>
+          </div>
+        </article>
+        <article class="project-card reveal">
+          <div class="project-tag">Full-Stack · Harman</div>
+          <h3>Dodge Data &amp; Analytics</h3>
+          <p>Drove business-logic migration and modernization on a full-stack platform.</p>
+          <div class="tags">
+            <span>C#</span><span>.NET Core</span><span>Angular</span><span>AWS</span>
+          </div>
+        </article>
+        <article class="project-card reveal">
+          <div class="project-tag">Automotive · Harman</div>
+          <h3>ConnectNext</h3>
+          <p>Built emulator capabilities that cut dependency on physical infotainment hardware.</p>
+          <div class="tags">
+            <span>Grails</span><span>Spring</span><span>Redux</span><span>Integration</span>
+          </div>
+        </article>
+        <article class="project-card reveal">
+          <div class="project-tag">R&amp;D · Philips</div>
+          <h3>AI Engineering Tooling</h3>
+          <p>Leading exploration into RAG, AI Agents, MCP, and n8n/Ollama automation to accelerate delivery velocity.</p>
+          <div class="tags">
+            <span>RAG</span><span>AI Agents</span><span>MCP</span><span>Ollama</span>
+          </div>
+        </article>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Skills Section -->
-    <section id="skills" class="section scrollspy outlined-section" data-aos="fade-up">
-      <div class="container">
-        <h2 class="fancy-text">Skills</h2>
-        <div class="section-divider" data-aos="fade" data-aos-duration="1000"></div>
-        <ul class="collection">
-          <li class="collection-item"><span class="glow-skill">Backend:</span> C#, Node.js</li>
-          <li class="collection-item"><span class="glow-skill">Frontend:</span> Angular, React</li>
-          <li class="collection-item"><span class="glow-skill">DevOps:</span> Terraform, Azure DevOps</li>
-          <li class="collection-item"><span class="glow-skill">Database:</span> MS SQL, Cosmos, Mongo</li>
-        </ul>
+  <!-- EDUCATION -->
+  <section class="section" id="education">
+    <div class="container">
+      <p class="section-label reveal">05 — Education</p>
+      <h2 class="section-title reveal">Academic background</h2>
+      <div class="education-grid">
+        <div class="education-card reveal">
+          <span class="edu-year">2013</span>
+          <h3>M.Sc. Computer Science</h3>
+        </div>
+        <div class="education-card reveal">
+          <span class="edu-year">2011</span>
+          <h3>B.Sc. Computer Science</h3>
+        </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Page Navigation Section -->
-    <section id="pageNavigation" class="section scrollspy outlined-section" data-aos="fade-up">
-      <div class="container">
-        <h2 class="fancy-text">Page Navigation</h2>
-        <div class="section-divider" data-aos="fade" data-aos-duration="1000"></div>
-        <ul class="collection nav-links">
-          <li class="collection-item"><a href="parallax1.html" class="nav-link">Visit Parallax1</a></li>
-          <li class="collection-item"><a href="parallax.html" class="nav-link">Parallax</a></li>
-        </ul>
+  <!-- CONTACT -->
+  <section class="section section-contact" id="contact">
+    <div class="container">
+      <p class="section-label reveal">06 — Contact</p>
+      <h2 class="section-title reveal">Let's build something reliable.</h2>
+      <p class="contact-desc reveal">
+        Open to conversations on software architecture, healthtech platforms, and AI-assisted
+        engineering. Reach out any time.
+      </p>
+      <div class="contact-grid reveal">
+        <a href="mailto:pjeet_4411@hotmail.com" class="contact-card">
+          <span class="contact-label">Email</span>
+          <span class="contact-value">pjeet_4411@hotmail.com</span>
+        </a>
+        <a href="tel:+919638269676" class="contact-card">
+          <span class="contact-label">Phone</span>
+          <span class="contact-value">+91 96382 69676</span>
+        </a>
+        <a href="https://linkedin.com/in/prasanjeet-debnath" target="_blank" rel="noopener" class="contact-card">
+          <span class="contact-label">LinkedIn</span>
+          <span class="contact-value">in/prasanjeet-debnath</span>
+        </a>
+        <a href="https://github.com/prasanjeetd" target="_blank" rel="noopener" class="contact-card">
+          <span class="contact-label">GitHub</span>
+          <span class="contact-value">github/prasanjeetd</span>
+        </a>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Footer -->
-    <footer class="page-footer blue darken-3">
-      <div class="container center-align">
-        © 2025 Prasanjeet Debnath. All rights reserved.
-      </div>
-    </footer>
+</main>
 
-    <!-- Three.js and Dependencies for Laptop Hover Effect -->
-    <script src="https://unpkg.com/three@0.153.0/build/three.min.js"></script>
-    <script src="https://unpkg.com/three@0.153.0/examples/js/loaders/GLTFLoader.js"></script>
-    <!-- Materialize JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <!-- AOS JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
-    <!-- Custom JS -->
-    <script src="script.js"></script>
-  </body>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <p>&copy; <span id="year"></span> Prasanjeet Debnath. Built with HTML, CSS &amp; JS.</p>
+    <a href="#home" class="back-to-top">Back to top ↑</a>
+  </div>
+</footer>
+
+<script src="js/script.js"></script>
+</body>
 </html>
