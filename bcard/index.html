@@ -2,39 +2,97 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#050c1f">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Prasanjeet Debnath</title>
-<link rel="preload" as="image" href="assets/prasanjeet-product-style-3.png">
-<link rel="stylesheet" href="card.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f4f6fb">
+<title>Scan to save card</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 20px 60px;
+    background: #f4f6fb; color: #0d1b3e;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: flex; flex-direction: column; align-items: center; gap: 18px;
+  }
+  h1 { font-size: 20px; margin: 0; font-weight: 600; letter-spacing: -.2px; }
+  .panel {
+    background: #fff; padding: 28px; border-radius: 18px; text-align: center;
+    box-shadow: 0 2px 20px rgba(13,27,62,.10);
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    max-width: 100%;
+  }
+  /* !important because toCanvas writes an inline width/height onto the element. */
+  canvas { width: 320px !important; max-width: 68vw; height: auto !important; display: block; }
+  .url {
+    font: 13px/1.5 ui-monospace, Menlo, Consolas, monospace;
+    color: #3d5280; word-break: break-all; max-width: 380px;
+    background: #f4f6fb; padding: 9px 12px; border-radius: 8px;
+  }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  button, a.btn {
+    padding: 11px 18px; border-radius: 10px; border: 1px solid #d3dbeb;
+    background: #fff; color: #0d1b3e; font: inherit; font-size: 13.5px;
+    font-weight: 600; cursor: pointer; text-decoration: none;
+  }
+  a.btn.primary {
+    background: linear-gradient(180deg, #2b8cff, #1a73e8);
+    color: #fff; border-color: transparent;
+  }
+  button:active, a.btn:active { transform: scale(.97); }
+  p.note { margin: 0; font-size: 12.5px; color: #5a6785; max-width: 420px; text-align: center; }
+  .warn {
+    background: #fff4e5; border: 1px solid #ffd9a8; color: #7a4a00;
+    padding: 12px 14px; border-radius: 10px; font-size: 13px; max-width: 460px;
+  }
+</style>
 </head>
 <body>
-  <div class="amb"></div>
+  <h1>Point your phone camera at the QR</h1>
 
-  <div class="stage">
-    <div class="float">
-      <div class="frame">
-        <img class="card" src="assets/prasanjeet-product-style-3.png" alt="Prasanjeet Debnath business card">
-      </div>
+  <div class="panel">
+    <canvas id="qr" width="1200" height="1200"></canvas>
+    <div class="url" id="url">…</div>
+    <div class="row">
+      <a class="btn primary" id="open" href="card.html">Open the card</a>
+      <a class="btn" id="dl" download="card-qr.png">Download QR for printing</a>
     </div>
   </div>
 
-  <div id="toast"></div>
+  <p class="note">
+    The QR encodes the address shown above — the card page — so it always
+    matches wherever this folder is hosted. Serve it from a public URL before
+    printing; a <code>localhost</code> or LAN address only works on this
+    network.
+  </p>
 
-  <div id="actions">
-    <a id="save" href="assets/prasanjeet-product-style-3.png">&#11015; Save Card</a>
-    <button id="share" type="button" hidden>&#8679; Share</button>
-    <button id="play" type="button">&#9654; Play</button>
-  </div>
+  <div class="warn" id="warn" hidden></div>
 
-  <div id="splash">
-    <video id="vid" src="assets/splash.mp4" playsinline preload="none"></video>
-    <button id="close" aria-label="Close">&#10005;</button>
-  </div>
+<script src="vendor/qrcode.min.js"></script>
+<script>
+  // This page is the launcher, so the QR must point at card.html — not at the
+  // folder, which would resolve back here and make scanning a loop. Derived
+  // from location, which keeps the code correct on localhost, on the LAN and
+  // on the deployed domain without regenerating.
+  const target = new URL('card.html', location.href).href;
+  document.getElementById('url').textContent = target;
+  document.getElementById('open').href = target;
 
-<script src="card.js"></script>
+  const canvas = document.getElementById('qr');
+  QRLib.toCanvas(canvas, target, { width: 1200, margin: 2 }, (err) => {
+    const warn = document.getElementById('warn');
+    if (err) {
+      warn.hidden = false;
+      warn.textContent = 'Could not draw the QR: ' + err.message;
+      return;
+    }
+    document.getElementById('dl').href = canvas.toDataURL('image/png');
+
+    if (location.protocol === 'file:') {
+      warn.hidden = false;
+      warn.textContent = 'Opened from the filesystem, so this QR encodes a '
+        + 'file:// path a phone cannot reach. Serve the folder over http first '
+        + '— for example: npx serve . -l 5173';
+    }
+  });
+</script>
 </body>
 </html>

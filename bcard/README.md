@@ -1,23 +1,25 @@
 # bcard — the scannable business card
 
-Lives at **https://prasanjeet.com/bcard/**. Scan the QR → the card fills the
-screen and saves itself with a datetime filename → tap the card → the splash
-video plays fullscreen with sound.
+**https://www.prasanjeet.com/bcard/** shows the QR. Scan it → the card fills
+the screen and saves itself with a datetime filename → tap the card → the
+splash video plays fullscreen with sound.
 
 Browser APIs only, no build step and no server. Copied from
-`ai automation/barcode-card/client`; the files are byte-identical to that build
-apart from this README and `qr.png`, which is regenerated for the live URL.
+`ai automation/barcode-card/client`; `card.css`, `card.js`, `vendor/` and
+`assets/` are byte-identical to that build. What differs is the entry point —
+upstream serves the card at the folder root and keeps the QR on `qr.html`, and
+those two are swapped here.
 
 ```
 bcard/
-├── index.html      the card page — what the QR points at
-├── qr.html         the launcher — shows the QR to scan
+├── index.html      the launcher — the QR, and what /bcard/ opens
+├── card.html       the card page — what the QR points at
 ├── card.css        styles, animations, ambient glow, orbiting border
 ├── card.js         save / share / fullscreen / splash logic
 ├── vendor/
 │   └── qrcode.min.js   QR encoder, bundled locally (24 kb, no CDN)
 ├── make-qr.mjs     optional: writes qr.png from the command line
-├── qr.png          encodes https://prasanjeet.com/bcard/
+├── qr.png          encodes https://www.prasanjeet.com/bcard/card.html
 └── assets/
     ├── prasanjeet-product-style-3.png   the card
     └── splash.mp4                       the logo animation
@@ -27,19 +29,24 @@ bcard/
 
 | Page | What it is |
 |---|---|
-| `index.html` | The card. This is what the QR opens. |
-| `qr.html` | The launcher — draws the QR on screen so you can scan it off a monitor while testing, and offers it as a PNG for printing. |
+| `index.html` | The launcher. `/bcard/` lands here — it draws the QR on screen to scan off a monitor, and offers it as a PNG for printing. |
+| `card.html` | The card. This is what the QR opens. |
 
-`qr.html` builds the QR **in the browser** from `location`, so it always encodes
-wherever the folder actually is — localhost, LAN IP, or the live domain — with
-nothing to regenerate.
+`index.html` builds the QR **in the browser** from `location`, so it always
+encodes wherever the folder actually is — localhost, LAN IP, or the live domain
+— with nothing to regenerate.
 
-Every path in `index.html` and `card.js` is relative, which is what lets the
+It targets `card.html` explicitly rather than the folder. Pointing it at the
+folder would resolve back to `index.html`, and scanning would just show the QR
+again — keep the filename in that `new URL(...)` call if you edit it.
+
+Every path in `card.html` and `card.js` is relative, which is what lets the
 folder sit at `/bcard/` rather than a domain root. GitHub Pages redirects
-`/bcard` to `/bcard/` on its own, so both spellings work.
+`/bcard` to `/bcard/` on its own, so both spellings work, and the apex domain
+301s to `www`.
 
-The site is deliberately not linked to this page from anywhere — it is reached
-by scanning the QR, or by typing the URL.
+The main site deliberately does not link here — this is reached by scanning the
+QR, or by typing the URL.
 
 ## Preview locally
 
@@ -47,28 +54,33 @@ by scanning the QR, or by typing the URL.
 npx serve . -l 5173
 ```
 
-`http://localhost:5173/qr.html` on the laptop, then scan with a phone on the
-same Wi-Fi. `http://localhost:5173` on its own is the card.
+`http://localhost:5173/bcard/` on the laptop is the QR; scan it with a phone on
+the same Wi-Fi and you land on the card. Serve the repo root rather than this
+folder so the local path matches production.
 
-`?debug=1` prints an on-screen trace — the static build has no endpoint to post
-logs to, so the overlay is the whole story.
+`?debug=1` on the card prints an on-screen trace — the static build has no
+endpoint to post logs to, so the overlay is the whole story.
 
 ## Reprinting the QR
 
-Open https://prasanjeet.com/bcard/qr.html and hit **Download QR for printing**;
-it encodes the live URL automatically. `make-qr.mjs` does the same from a
+Open https://www.prasanjeet.com/bcard/ and hit **Download QR for printing**; it
+encodes the live URL automatically. `make-qr.mjs` does the same from a
 terminal, but needs the `qrcode` package, which this repo does not carry — run
 it from the `barcode-card` project instead:
 
 ```bash
-node make-qr.mjs https://prasanjeet.com/bcard/   # writes qr.png
+node make-qr.mjs https://www.prasanjeet.com/bcard/card.html   # writes qr.png
 ```
 
 ## Swapping the card or video
 
 Replace the files in `assets/`. If you rename them, update the two paths in
-`index.html` and the `CARD` object at the top of `card.js`. `CARD.base` sets the
+`card.html` and the `CARD` object at the top of `card.js`. `CARD.base` sets the
 download filename prefix; the datetime is appended automatically.
+
+Note the card artwork has a QR printed into the image itself. That one is baked
+into the PNG and is not generated by anything here — changing `qr.png` or the
+launcher has no effect on it.
 
 ## Notes
 
