@@ -1,0 +1,147 @@
+@property --angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; margin: 0; }
+
+body {
+  background: #050c1f; color: #fff;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  height: 100dvh; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Ambient light behind the card. */
+.amb {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(58% 46% at 50% 38%, rgba(43,140,255,.26), transparent 70%),
+    radial-gradient(48% 38% at 50% 102%, rgba(11,54,128,.38), transparent 72%);
+  opacity: 0;
+  animation: fade 1.6s ease .1s forwards;
+}
+
+/* ---- the card: what the QR lands on ------------------------------------ */
+.stage {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; height: 100dvh;
+}
+
+.float { animation: bob 6s ease-in-out 1.4s infinite; }
+
+.frame {
+  position: relative; padding: 3px; border-radius: 22px; cursor: pointer;
+  animation: cardIn 1s cubic-bezier(.16,.84,.32,1.04) .15s both;
+}
+
+/* Standby: a light travels the border, forever. */
+.frame::before, .frame::after {
+  content: ''; position: absolute; border-radius: inherit;
+  background: conic-gradient(from var(--angle),
+    #12305c 0deg, #2b8cff 65deg, #bfe6ff 105deg, #7ba7bc 145deg,
+    #12305c 200deg, #1d4a86 285deg, #12305c 360deg);
+  animation: spin 4.5s linear infinite, pulse 3.2s ease-in-out infinite;
+}
+.frame::before { inset: -7px; filter: blur(16px); opacity: .6; }
+.frame::after  { inset: 0; }
+
+.card {
+  position: relative; z-index: 1; display: block; border-radius: 19px;
+  max-width: calc(100vw - 22px); max-height: calc(100dvh - 22px);
+  object-fit: contain;
+  box-shadow: 0 30px 80px rgba(0,0,0,.6);
+}
+
+@keyframes fade  { to { opacity: 1; } }
+@keyframes spin  { to { --angle: 360deg; } }
+@keyframes pulse { 0%, 100% { opacity: .6; } 50% { opacity: 1; } }
+@keyframes bob   { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(46px) scale(.9); filter: blur(12px); }
+  55%  { filter: blur(0); }
+  to   { opacity: 1; transform: none; filter: blur(0); }
+}
+
+/* ---- action pills: always available, both tap-driven ------------------- */
+#actions {
+  position: fixed; z-index: 15; left: 0; right: 0;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  display: flex; justify-content: center; gap: 10px;
+  opacity: 0; animation: fade .5s ease 1.5s forwards;
+  transition: opacity .3s ease;
+}
+body.playing #actions { opacity: 0 !important; pointer-events: none; }
+
+#actions a, #actions button {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 20px; border-radius: 999px;
+  font: inherit; font-size: 13.5px; letter-spacing: .4px;
+  text-decoration: none; cursor: pointer;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+#save {
+  background: linear-gradient(180deg, #2b8cff, #1a73e8); color: #fff;
+  border: 1px solid rgba(255,255,255,.18); font-weight: 600;
+  box-shadow: 0 8px 24px rgba(26,115,232,.4);
+}
+#play {
+  background: rgba(255,255,255,.10); color: #fff;
+  border: 1px solid rgba(255,255,255,.22);
+}
+#save:active, #play:active { transform: scale(.96); }
+
+/* ---- splash: opened by tapping the card -------------------------------- */
+#splash {
+  position: fixed; inset: 0; z-index: 50; background: #050c1f;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .45s ease;
+}
+#splash.show { opacity: 1; pointer-events: auto; }
+#splash video {
+  width: 100%; height: 100%;
+  object-fit: contain;   /* never crop the logo animation */
+}
+
+#close {
+  position: absolute; z-index: 2;
+  right: calc(14px + env(safe-area-inset-right));
+  top: calc(14px + env(safe-area-inset-top));
+  width: 38px; height: 38px; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.10);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  color: #fff; font: inherit; font-size: 17px; line-height: 1; cursor: pointer;
+}
+
+/* Above the splash on purpose — at z-index 40 it was being buried by it. */
+#toast {
+  position: fixed; z-index: 60; left: 50%; transform: translateX(-50%);
+  top: calc(18px + env(safe-area-inset-top));
+  padding: 11px 18px; border-radius: 999px;
+  background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  color: #fff; font-size: 13px; letter-spacing: .3px; white-space: nowrap;
+  opacity: 0; transition: opacity .4s ease; pointer-events: none;
+}
+#toast.show { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .amb, .frame, .float, .frame::before, .frame::after { animation: none; }
+  .amb, #actions { opacity: 1; }
+}
+
+/* ?debug=1 — on-screen trace, so a phone can be diagnosed without dev tools. */
+#dbg {
+  position: fixed; z-index: 999; left: 0; right: 0; top: 0;
+  max-height: 45vh; overflow: auto; margin: 0;
+  padding: 8px 10px calc(8px + env(safe-area-inset-top));
+  background: rgba(0,0,0,.86); color: #7fffa8;
+  font: 10px/1.45 ui-monospace, Menlo, Consolas, monospace;
+  white-space: pre-wrap; word-break: break-all;
+}
+
+#share {
+  background: rgba(255,255,255,.14); color: #fff;
+  border: 1px solid rgba(255,255,255,.26); font-weight: 600;
+}
+#share[hidden] { display: none; }
