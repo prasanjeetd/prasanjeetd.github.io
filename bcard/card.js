@@ -173,7 +173,9 @@
     log('video:open');
     document.body.classList.add('playing');
     splash.classList.add('show');
-    try { video.currentTime = 0; } catch {}
+    // Rewind only once metadata exists. Seeking an unloaded element throws on
+    // iOS, and the throw fires between the gesture and play() below.
+    if (video.readyState >= 1) { try { video.currentTime = 0; } catch {} }
     // The tap is a user gesture, so sound is allowed; a bare autoplay is not.
     video.muted = false;
     const p = video.play();
@@ -185,10 +187,14 @@
       });
     }
     // iPhone has no Fullscreen API for elements, but video carries its own.
-    if (isIOS && video.webkitEnterFullscreen) {
-      const go = () => { try { video.webkitEnterFullscreen(); } catch {} };
-      if (video.readyState >= 1) go();
-      else video.addEventListener('loadedmetadata', go, { once: true });
+    // It must be called inside this same gesture. Deferring it to
+    // loadedmetadata — as this did — puts it outside the transient activation,
+    // so iOS rejects it on every cold tap and the catch swallows the error.
+    // If metadata has not arrived yet we simply stay inline, which is what
+    // playsinline is on the element for.
+    if (isIOS && video.webkitEnterFullscreen && video.readyState >= 1) {
+      try { video.webkitEnterFullscreen(); }
+      catch (err) { log('fs:ios-threw', { err: String(err) }); }
     }
   }
 
@@ -213,15 +219,27 @@
   document.addEventListener('fullscreenchange', onFsChange);
   document.addEventListener('webkitfullscreenchange', onFsChange);
 
+  // iOS native video fullscreen is outside the Fullscreen API, so
+  // fullscreenchange never fires for it. Without this, dismissing the iPhone
+  // player with Done left the splash overlay covering the card.
+  video.addEventListener('webkitendfullscreen', () => { log('video:ios-fs-end'); closeSplash(); });
+
   // --- on arrival ----------------------------------------------------------
   // Not gated on the load event: if it has already fired the handler never
   // runs and the save is silently skipped.
   setTimeout(async () => {
     if (await saveCard('auto')) showToast('✓ Saved to your phone');
     warmShare();
-    // Warmed only after the card is up, so the 2.7 MB video never competes
-    // with the card image for bandwidth.
-    video.preload = 'auto';
-    video.load();
+    // Warmed only after the card is up, so the 2.4 MB video never competes
+    // with the card image for bandwidth. The element starts at
+    // preload="metadata" rather than "none": iOS will not fetch media without
+    // a gesture, so "none" left readyState at 0 on tap, which is what blocked
+    // the iPhone fullscreen path. Metadata is only the moov atom — 45 kB here,
+    // because the file is faststart — so the bandwidth argument still holds.
+    // load() resets readyState, so skip it if the splash is already up.
+    if (!open) {
+      video.preload = 'auto';
+      video.load();
+    }
   }, 1100);
 })();
