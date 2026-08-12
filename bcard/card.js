@@ -269,8 +269,27 @@
     // "this device cannot reach the bytes" from "this device cannot decode
     // them". Without it a MediaError code alone cannot tell those apart.
     probe();
+    recover();
     closeSplash();
   });
+
+  // Once an element reaches NETWORK_NO_SOURCE it stays dead until load() is
+  // called again — which is why, on the failing iPhones, every subsequent tap
+  // rejected instantly no matter how long the user waited. The ordering fix
+  // should stop it dying in the first place; this is the belt to that pair of
+  // braces, and it makes the page self-healing against causes not yet
+  // identified. Once only, and late enough that whatever cancelled the
+  // network has finished.
+  let recovered = false;
+  function recover() {
+    if (recovered) return;
+    recovered = true;
+    setTimeout(() => {
+      if (open || video.readyState > 0) return;
+      log('video:recover', { readyState: video.readyState, networkState: video.networkState });
+      try { video.load(); } catch (err) { log('video:recover-failed', { err: String(err) }); }
+    }, 2500);
+  }
 
   // --- media trace ---------------------------------------------------------
   // The error event says the element died; these say how far it got first.
@@ -335,23 +354,46 @@
   // Not gated on the load event: if it has already fired the handler never
   // runs and the save is silently skipped.
   setTimeout(async () => {
+    // Order matters, and the iPhone logs are why. Triggering the save first
+    // fired a blob download, and WebKit treats that as a navigation and
+    // cancels in-flight network requests — so the video load that used to run
+    // straight afterwards was aborted the same millisecond, leaving a dead
+    // element and MediaError 4 for the rest of the session. Warming the video
+    // before the download means there is nothing in flight for it to cancel.
+    warmVideo();
+
     if (await saveCard('auto')) showToast('✓ Saved to your phone');
     warmShare();
-    // Warmed only after the card is up, so the 1.9 MB video never competes
-    // with the card image for bandwidth. The element starts at
-    // preload="metadata" rather than "none": iOS will not fetch media without
-    // a gesture, so "none" left readyState at 0 on tap, which is what blocked
-    // the iPhone fullscreen path. Metadata is only the moov atom — 45 kB here,
-    // because the file is faststart — so the bandwidth argument still holds.
-    // load() resets readyState, so skip it if the splash is already up.
-    if (!open) {
-      // Timestamped, because the first iPhone log showed video:error landing
-      // 30 ms after the auto-save's blob download click and there was no way to
-      // tell whether load() had even been called yet. Now the ordering of
-      // save:clicked -> video:warm -> video:error is explicit.
-      log('video:warm', { readyState: video.readyState, networkState: video.networkState });
-      video.preload = 'auto';
-      video.load();
-    }
   }, 1100);
+
+  // The 1100 ms delay keeps all of this off the critical path so the 1.9 MB
+  // video and the 1.2 MB card image never compete. The element is declared
+  // preload="metadata" rather than "none": iOS refuses to fetch media without
+  // a gesture, and "none" left readyState at 0, which blocked the iPhone
+  // fullscreen path. Metadata is just the moov atom — 45 kB, since the file is
+  // faststart — so the bandwidth argument still holds.
+
+  // Upgrades preloading from metadata to the whole file — but only when the
+  // element has nothing yet.
+  //
+  // load() is destructive: it discards whatever the element holds and starts
+  // over. On iPhone, preload="metadata" had already produced a healthy element
+  // (loadedmetadata, readyState 1) by 30 ms, and calling load() a second later
+  // threw that away. Re-fetching then collided with the download and the
+  // element never recovered. Guarding on readyState keeps the warm-up for
+  // browsers that really did fetch nothing, and leaves a working element alone.
+  function warmVideo() {
+    if (open) return;
+    const cold = video.readyState === 0;
+    log('video:warm', {
+      readyState: video.readyState, networkState: video.networkState, willLoad: cold,
+    });
+    // A healthy element is left completely alone — preload is not touched
+    // either, since raising it to "auto" can start a buffer fetch, and a fetch
+    // in flight is exactly what the download cancels. Nothing in flight,
+    // nothing to cancel.
+    if (!cold) return;
+    video.preload = 'auto';
+    video.load();
+  }
 })();
