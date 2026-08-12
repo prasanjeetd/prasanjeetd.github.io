@@ -6,6 +6,9 @@
     image: 'assets/prasanjeet-product-style-3.png',
     // Download filename base; a datetime is appended on every save.
     base: 'prasanjeet-product-style-3',
+    // Needed by the diagnostic probe, which fetches the video independently of
+    // the <video> element to separate a network fault from a media fault.
+    video: 'assets/splash.mp4',
   };
 
   const $ = (id) => document.getElementById(id);
@@ -49,6 +52,18 @@
   // profile. This is the card-specific half, kept separate so the two do not
   // collide in the logs.
   log('card:ready', { w: innerWidth, h: innerHeight, dpr: devicePixelRatio, isIOS });
+
+  // Sampled before anything can fail. An empty string here means WebKit rejects
+  // the codec outright, which would be a verdict on the file; "probably" means
+  // it accepts the format and any later failure is about delivery or timing,
+  // not the encoding. Asking only after an error cannot separate the two.
+  log('video:support', {
+    mp4: video.canPlayType('video/mp4') || 'no',
+    main31: video.canPlayType('video/mp4; codecs="avc1.4d401f"') || 'no',
+    pair: video.canPlayType('video/mp4; codecs="avc1.4d401f, mp4a.40.2"') || 'no',
+    baseline: video.canPlayType('video/mp4; codecs="avc1.42E01E"') || 'no',
+    aac: video.canPlayType('audio/mp4; codecs="mp4a.40.2"') || 'no',
+  });
 
   // --- save ----------------------------------------------------------------
   function filename() {
@@ -196,7 +211,10 @@
     const p = video.play();
     if (p && p.catch) {
       p.catch((err) => {
-        log('video:play-rejected', { err: String(err) });
+        // Carrying the media state makes the rejection self-explanatory: a
+        // NotSupportedError with an error code already set means the element
+        // died during load and this tap never had a chance.
+        log('video:play-rejected', { err: String(err), ...mediaState() });
         video.muted = true;
         video.play().catch(closeSplash);
       });
@@ -226,7 +244,81 @@
   frame.addEventListener('click', () => { enterFS(splash); openSplash(); });
   $('play').addEventListener('click', (e) => { e.stopPropagation(); enterFS(splash); openSplash(); });
   video.addEventListener('ended', closeSplash);
-  video.addEventListener('error', () => { log('video:error'); closeSplash(); });
+
+  // MediaError codes, because "video:error" on its own says nothing useful:
+  // 1 ABORTED and 2 NETWORK mean the fetch was interrupted, 3 DECODE means the
+  // bytes arrived but could not be decoded, 4 SRC_NOT_SUPPORTED means the
+  // source was rejected outright. Those need completely different fixes, and
+  // the first iPhone log could not distinguish them.
+  const MEDIA_ERR = ['', 'ABORTED', 'NETWORK', 'DECODE', 'SRC_NOT_SUPPORTED'];
+  function mediaState() {
+    const e = video.error;
+    return {
+      code: e ? e.code : null,
+      name: e ? (MEDIA_ERR[e.code] || '?') : null,
+      msg: e && e.message ? String(e.message) : '',
+      readyState: video.readyState,
+      networkState: video.networkState,
+      src: video.currentSrc || '',
+      canPlay: video.canPlayType('video/mp4; codecs="avc1.4d401f, mp4a.40.2"') || 'no',
+    };
+  }
+  video.addEventListener('error', () => {
+    log('video:error', mediaState());
+    // Fired once, and only on failure: fetching the same URL by hand separates
+    // "this device cannot reach the bytes" from "this device cannot decode
+    // them". Without it a MediaError code alone cannot tell those apart.
+    probe();
+    closeSplash();
+  });
+
+  // --- media trace ---------------------------------------------------------
+  // The error event says the element died; these say how far it got first.
+  // loadstart without loadedmetadata means it never parsed the header;
+  // loadedmetadata then abort means something interrupted a load that was
+  // working. That distinction is the whole diagnosis.
+  const traceCount = {};
+  ['loadstart', 'loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough',
+    'stalled', 'suspend', 'abort', 'emptied', 'waiting'].forEach((ev) => {
+    video.addEventListener(ev, () => {
+      // stalled and waiting can repeat indefinitely on a bad connection; a few
+      // samples prove the pattern and the rest is noise.
+      traceCount[ev] = (traceCount[ev] || 0) + 1;
+      if (traceCount[ev] > 3) return;
+      let buffered = '';
+      try {
+        const b = video.buffered;
+        buffered = b.length ? `${b.start(0).toFixed(1)}-${b.end(b.length - 1).toFixed(1)}` : 'none';
+      } catch { buffered = 'n/a'; }
+      log(`video:${ev}`, {
+        readyState: video.readyState, networkState: video.networkState, buffered,
+      });
+    });
+  });
+
+  let probed = false;
+  async function probe() {
+    if (probed) return;
+    probed = true;
+    try {
+      const t0 = Date.now();
+      const res = await fetch(CARD.video, { headers: { Range: 'bytes=0-1023' } });
+      const buf = await res.arrayBuffer();
+      // Bytes 4-8 of a valid MP4 are the string "ftyp". If those arrive intact
+      // the file reached the device unmangled and the fault is in decoding.
+      const sig = String.fromCharCode(...new Uint8Array(buf.slice(4, 8)));
+      log('video:probe', {
+        status: res.status,
+        type: res.headers.get('content-type'),
+        range: res.headers.get('content-range'),
+        bytes: buf.byteLength,
+        ftyp: sig,
+        ms: Date.now() - t0,
+      });
+    } catch (err) {
+      log('video:probe-failed', { err: String(err) });
+    }
+  }
   splash.addEventListener('click', closeSplash);
   $('close').addEventListener('click', (e) => { e.stopPropagation(); closeSplash(); });
 
@@ -253,6 +345,11 @@
     // because the file is faststart — so the bandwidth argument still holds.
     // load() resets readyState, so skip it if the splash is already up.
     if (!open) {
+      // Timestamped, because the first iPhone log showed video:error landing
+      // 30 ms after the auto-save's blob download click and there was no way to
+      // tell whether load() had even been called yet. Now the ordering of
+      // save:clicked -> video:warm -> video:error is explicit.
+      log('video:warm', { readyState: video.readyState, networkState: video.networkState });
       video.preload = 'auto';
       video.load();
     }

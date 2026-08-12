@@ -9,104 +9,11 @@
  * signs S3 requests directly. No dependencies: SigV4 is done with node:crypto.
  * Credentials come from secret/.r2.secret, which is gitignored.
  */
-import { createHash, createHmac } from 'node:crypto';
 import { readFileSync, existsSync, unlinkSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 import path from 'node:path';
-
-const here = path.dirname(fileURLToPath(import.meta.url));
-const SECRET = path.join(here, '..', '..', 'secret', '.r2.secret');
-
-function env() {
-  const txt = readFileSync(SECRET, 'utf8');
-  const get = (k) => (txt.match(new RegExp(`^${k}=(.+)$`, 'm')) || [])[1]?.trim();
-  return {
-    account: get('R2_ACCOUNT_ID'),
-    key: get('R2_ACCESS_KEY_ID'),
-    secret: get('R2_SECRET_ACCESS_KEY'),
-    // BUCKET= overrides, which is how you check whether a 403 is a signing
-    // fault or simply an access key scoped to a different bucket.
-    bucket: process.env.BUCKET || get('LOGS_BUCKET') || 'site-logs',
-  };
-}
-
-const sha256 = (s) => createHash('sha256').update(s).digest('hex');
-const hmac = (k, s) => createHmac('sha256', k).update(s).digest();
-
-// S3 wants each path segment encoded, but not the separators.
-const enc = (s) => encodeURIComponent(s).replace(/[!'()*]/g, (c) =>
-  '%' + c.charCodeAt(0).toString(16).toUpperCase());
-
-async function s3(cfg, { path: p = '/', query = {} }) {
-  const host = `${cfg.account}.r2.cloudflarestorage.com`;
-  const now = new Date();
-  const amz = now.toISOString().replace(/[:-]|\.\d{3}/g, '');
-  const date = amz.slice(0, 8);
-  const region = 'auto';
-  const service = 's3';
-
-  // Canonical query string must be sorted by key, with both sides encoded.
-  const canonicalQuery = Object.keys(query).sort()
-    .map((k) => `${enc(k)}=${enc(query[k])}`).join('&');
-
-  const canonicalUri = '/' + [cfg.bucket, ...p.split('/').filter(Boolean)]
-    .map(enc).join('/');
-
-  const payloadHash = sha256('');
-  const canonicalHeaders = `host:${host}\nx-amz-content-sha256:${payloadHash}\nx-amz-date:${amz}\n`;
-  const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
-
-  const canonicalRequest = [
-    'GET', canonicalUri, canonicalQuery, canonicalHeaders, signedHeaders, payloadHash,
-  ].join('\n');
-
-  const scope = `${date}/${region}/${service}/aws4_request`;
-  const stringToSign = [
-    'AWS4-HMAC-SHA256', amz, scope, sha256(canonicalRequest),
-  ].join('\n');
-
-  let k = hmac(`AWS4${cfg.secret}`, date);
-  k = hmac(k, region);
-  k = hmac(k, service);
-  k = hmac(k, 'aws4_request');
-  const signature = createHmac('sha256', k).update(stringToSign).digest('hex');
-
-  const auth = `AWS4-HMAC-SHA256 Credential=${cfg.key}/${scope},`
-    + ` SignedHeaders=${signedHeaders}, Signature=${signature}`;
-
-  const url = `https://${host}${canonicalUri}${canonicalQuery ? '?' + canonicalQuery : ''}`;
-  const res = await fetch(url, {
-    headers: { Authorization: auth, 'x-amz-content-sha256': payloadHash, 'x-amz-date': amz },
-  });
-  const text = await res.text();
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}\n${text.slice(0, 400)}`);
-  return text;
-}
-
-// R2 returns XML; only three fields are needed, so a regex beats a parser dep.
-function parseList(xml) {
-  const out = [];
-  for (const m of xml.matchAll(/<Contents>([\s\S]*?)<\/Contents>/g)) {
-    const f = (t) => (m[1].match(new RegExp(`<${t}>([\\s\\S]*?)</${t}>`)) || [])[1];
-    out.push({ key: f('Key'), size: +f('Size'), modified: f('LastModified') });
-  }
-  return out;
-}
-
-async function listAll(cfg, prefix) {
-  const objects = [];
-  let token;
-  do {
-    const q = { 'list-type': '2', prefix, 'max-keys': '1000' };
-    if (token) q['continuation-token'] = token;
-    const xml = await s3(cfg, { query: q });
-    objects.push(...parseList(xml));
-    token = (xml.match(/<NextContinuationToken>(.*?)<\/NextContinuationToken>/) || [])[1];
-  } while (token);
-  return objects;
-}
+import { env, s3, listAll, human, SECRET } from './r2.mjs';
 
 // Reading one object goes through wrangler rather than S3. The existing
 // R2_ACCESS_KEY_ID pair is scoped to live-assist-audio and returns 403 on
@@ -138,9 +45,6 @@ function getViaWrangler(cfg, key) {
   return body;
 }
 
-const human = (n) => n < 1024 ? `${n} B`
-  : n < 1048576 ? `${(n / 1024).toFixed(1)} KB`
-  : `${(n / 1048576).toFixed(2)} MB`;
 
 // ------------------------------------------------------------------ main ---
 const [cmd = 'ls', a, b] = process.argv.slice(2);
