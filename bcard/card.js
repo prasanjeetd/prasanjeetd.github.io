@@ -366,6 +366,54 @@
     warmShare();
   }, 1100);
 
+  // --- is the UI actually reachable? ---------------------------------------
+  // A session that ends with no video:open cannot be told apart from "the user
+  // never tapped" unless we know whether there was anything tappable on screen.
+  // This measures the action bar and the card after the fade-in has finished:
+  // where they are, whether they are inside the viewport, and whether anything
+  // is painted over them. Cheap, once, and it settles the question from the
+  // device rather than from a screenshot.
+  setTimeout(() => {
+    const vw = innerWidth, vh = innerHeight;
+    const measure = (el, name) => {
+      if (!el) return { [name]: 'MISSING' };
+      const r = el.getBoundingClientRect();
+      const cs = getComputedStyle(el);
+      // What the browser thinks is on top at the element's own centre. If that
+      // is not this element or its child, something is covering it.
+      const mid = document.elementFromPoint(
+        Math.min(Math.max(r.left + r.width / 2, 0), vw - 1),
+        Math.min(Math.max(r.top + r.height / 2, 0), vh - 1)
+      );
+      return {
+        [name]: `${Math.round(r.left)},${Math.round(r.top)} ${Math.round(r.width)}x${Math.round(r.height)}`,
+        [name + 'Vis']: r.width > 0 && r.height > 0 && r.bottom <= vh && r.top >= 0,
+        [name + 'Op']: cs.opacity,
+        [name + 'Disp']: cs.display,
+        [name + 'Hit']: mid ? (el.contains(mid) || mid === el ? 'self' : (mid.id || mid.className || mid.tagName)) : 'none',
+      };
+    };
+    const info = {
+      vw, vh, dvh: document.documentElement.clientHeight,
+      ...measure($('actions'), 'bar'),
+      ...measure($('play'), 'play'),
+      ...measure(frame, 'card'),
+    };
+    log('ui:reachable', info);
+
+    // The bar is painted only by a CSS animation that starts at opacity 0. If
+    // that animation never ran — throttled tab, an iOS quirk, anything — the
+    // buttons stay permanently invisible with no error anywhere. Rather than
+    // trust it, check and force it. By 2.6s the 1.5s-delayed fade is long done,
+    // so a still-zero opacity means it is never coming.
+    const bar = $('actions');
+    if (bar && getComputedStyle(bar).opacity === '0' && !document.body.classList.contains('playing')) {
+      bar.style.animation = 'none';
+      bar.style.opacity = '1';
+      log('ui:forced-actions-visible');
+    }
+  }, 2600);
+
   // The 1100 ms delay keeps all of this off the critical path so the 1.9 MB
   // video and the 1.2 MB card image never compete. The element is declared
   // preload="metadata" rather than "none": iOS refuses to fetch media without

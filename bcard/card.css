@@ -6,7 +6,20 @@ html, body { height: 100%; margin: 0; }
 body {
   background: #050c1f; color: #fff;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  height: 100dvh; overflow: hidden;
+  /* svh, not dvh. dvh is the CURRENT viewport, which on iPhone is the tall
+     one measured with Safari's toolbar hidden — so the layout was sized to
+     space that the floating toolbar then covered. The card got cropped top and
+     bottom, and the action bar ended up underneath the toolbar entirely, which
+     is why Save/Share/Play appeared to be missing. svh is the viewport with
+     the browser chrome shown, so nothing is ever hidden behind it.
+     dvh first as the fallback for anything without svh. */
+  height: 100dvh;
+  height: 100svh;
+  overflow: hidden;
+  /* Positioning context for #actions, so the bar is placed against this
+     svh-sized box rather than against the viewport that extends under the
+     toolbar. */
+  position: relative;
   display: flex; align-items: center; justify-content: center;
 }
 
@@ -24,7 +37,9 @@ body {
 .stage {
   position: relative; z-index: 1;
   display: flex; align-items: center; justify-content: center;
-  width: 100%; height: 100dvh;
+  width: 100%;
+  height: 100dvh;
+  height: 100svh;
 }
 
 .float { animation: bob 6s ease-in-out 1.4s infinite; }
@@ -47,7 +62,11 @@ body {
 
 .card {
   position: relative; z-index: 1; display: block; border-radius: 19px;
-  max-width: calc(100vw - 22px); max-height: calc(100dvh - 22px);
+  max-width: calc(100vw - 22px);
+  /* Leaves room for the action bar as well as the chrome — at 22px the card
+     filled the whole svh box and the buttons sat on top of the artwork. */
+  max-height: calc(100dvh - 22px);
+  max-height: calc(100svh - 96px);
   object-fit: contain;
   box-shadow: 0 30px 80px rgba(0,0,0,.6);
 }
@@ -64,9 +83,17 @@ body {
 
 /* ---- action pills: always available, both tap-driven ------------------- */
 #actions {
-  position: fixed; z-index: 15; left: 0; right: 0;
+  /* absolute, against the svh-sized body — not fixed. A fixed element is
+     positioned against the viewport that extends beneath Safari's floating
+     toolbar, which is what buried this bar completely on iPhone. Anchoring it
+     to body keeps it inside the area that is actually visible. */
+  position: absolute; z-index: 15; left: 0; right: 0;
   bottom: calc(16px + env(safe-area-inset-bottom));
   display: flex; justify-content: center; gap: 10px;
+  /* Three pills (Save / Share / Play) on a narrow phone would otherwise
+     overflow a nowrap row, and body has overflow:hidden, so the last one —
+     Play — would simply be clipped away. */
+  flex-wrap: wrap; padding: 0 12px;
   opacity: 0; animation: fade .5s ease 1.5s forwards;
   transition: opacity .3s ease;
 }
