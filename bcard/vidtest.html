@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1b3e">
+<title>bcard — video diagnostic</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; padding: 18px 14px 60px;
+    background: #0d1b3e; color: #eaf0ff;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 15px; line-height: 1.5;
+  }
+  h1 { font-size: 19px; margin: 0 0 4px; }
+  h2 {
+    font-size: 14px; margin: 26px 0 8px; text-transform: uppercase;
+    letter-spacing: .8px; color: #7fa8ff;
+  }
+  p { margin: 0 0 10px; color: #b9c7e8; font-size: 13.5px; }
+  video { width: 100%; background: #000; border-radius: 10px; display: block; }
+  button {
+    width: 100%; padding: 15px; border-radius: 10px; border: 0;
+    background: linear-gradient(180deg, #2b8cff, #1a73e8); color: #fff;
+    font: inherit; font-weight: 600; cursor: pointer; margin-top: 8px;
+  }
+  button.alt { background: #24365f; }
+  button:active { transform: scale(.98); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td { padding: 5px 0; border-bottom: 1px solid #223ố; border-bottom: 1px solid #22355f; vertical-align: top; }
+  td:first-child { color: #8fa3cc; width: 42%; }
+  td:last-child { font-family: ui-monospace, Menlo, Consolas, monospace; word-break: break-all; }
+  pre {
+    background: #060f2a; border: 1px solid #22355f; border-radius: 8px;
+    padding: 10px; margin: 0; max-height: 40vh; overflow: auto;
+    font: 11px/1.5 ui-monospace, Menlo, Consolas, monospace;
+    color: #7fffa8; white-space: pre-wrap; word-break: break-all;
+  }
+  .bad  { color: #ff8b8b; font-weight: 700; }
+  .good { color: #7fffa8; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<h1>Video diagnostic</h1>
+<p>Open this on the iPhone that fails. Do step 1, then step 2, then tap
+<b>Copy report</b> and paste it back.</p>
+
+<h2>Step 1 — native player</h2>
+<p>Tap play on the bar below. This is the browser's own player with no script
+driving it. <b>If this will not play, the problem is the file or the network</b>
+— not the card page.</p>
+<video id="v" src="assets/splash.mp4" controls playsinline preload="metadata"></video>
+
+<h2>Step 2 — scripted play</h2>
+<p>This does exactly what tapping the card does: unmuted <code>play()</code>
+inside the tap, then iOS fullscreen if metadata is ready.</p>
+<button id="go">Play with sound, like the card</button>
+<button id="goMuted" class="alt">Play muted (fallback path)</button>
+
+<h2>State</h2>
+<table id="state"></table>
+
+<h2>Network check</h2>
+<p>Fetches the first 1 KB of the video straight from this phone, so a blocker,
+proxy or DNS filter on the device shows up here.</p>
+<button id="netbtn" class="alt">Run network check</button>
+<table id="net"></table>
+
+<h2>Codec support</h2>
+<table id="codec"></table>
+
+<h2>Event log</h2>
+<pre id="log"></pre>
+
+<button id="copy" class="alt">Copy report</button>
+
+<script>
+(() => {
+  const v = document.getElementById('v');
+  const logEl = document.getElementById('log');
+  const lines = [];
+  let seq = 0;
+
+  function log(msg) {
+    lines.push(`${String(++seq).padStart(3, '0')} +${(performance.now() / 1000).toFixed(2)}s  ${msg}`);
+    logEl.textContent = lines.join('\n');
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  // Every media event worth seeing. "stalled" and "suspend" are the ones that
+  // reveal a load that starts and then goes nowhere.
+  ['loadstart','durationchange','loadedmetadata','loadeddata','progress',
+   'canplay','canplaythrough','playing','waiting','stalled','suspend','abort',
+   'emptied','error','pause','ended','webkitbeginfullscreen','webkitendfullscreen'
+  ].forEach((ev) => {
+    v.addEventListener(ev, () => {
+      let extra = '';
+      if (ev === 'error' && v.error) extra = ` code=${v.error.code} (${errName(v.error.code)}) msg=${JSON.stringify(v.error.message || '')}`;
+      if (ev === 'progress') extra = ` buffered=${buffered()}`;
+      log(`event: ${ev}${extra}`);
+    });
+  });
+
+  const READY = ['0 HAVE_NOTHING','1 HAVE_METADATA','2 HAVE_CURRENT_DATA','3 HAVE_FUTURE_DATA','4 HAVE_ENOUGH_DATA'];
+  const NET   = ['0 EMPTY','1 IDLE','2 LOADING','3 NO_SOURCE'];
+  const errName = (c) => ['','ABORTED','NETWORK','DECODE','SRC_NOT_SUPPORTED'][c] || '?';
+
+  function buffered() {
+    try {
+      const b = v.buffered, out = [];
+      for (let i = 0; i < b.length; i++) out.push(`${b.start(i).toFixed(2)}-${b.end(i).toFixed(2)}`);
+      return out.length ? out.join(',') : 'none';
+    } catch { return 'n/a'; }
+  }
+
+  function row(t, k, val, cls) {
+    const tr = t.insertRow();
+    tr.insertCell().textContent = k;
+    const c = tr.insertCell();
+    c.textContent = val;
+    if (cls) c.className = cls;
+  }
+
+  const stateTbl = document.getElementById('state');
+  function paintState() {
+    stateTbl.innerHTML = '';
+    const err = v.error ? `code ${v.error.code} ${errName(v.error.code)} ${v.error.message || ''}` : 'none';
+    row(stateTbl, 'error', err, v.error ? 'bad' : 'good');
+    row(stateTbl, 'readyState', READY[v.readyState] || v.readyState, v.readyState >= 1 ? 'good' : 'bad');
+    row(stateTbl, 'networkState', NET[v.networkState] || v.networkState);
+    row(stateTbl, 'buffered', buffered());
+    row(stateTbl, 'duration', isNaN(v.duration) ? 'NaN (metadata not parsed)' : v.duration.toFixed(3));
+    row(stateTbl, 'videoWidth x Height', `${v.videoWidth} x ${v.videoHeight}`);
+    row(stateTbl, 'currentTime', v.currentTime.toFixed(2));
+    row(stateTbl, 'paused / muted', `${v.paused} / ${v.muted}`);
+    row(stateTbl, 'currentSrc', v.currentSrc || '(empty)');
+    row(stateTbl, 'webkitEnterFullscreen', typeof v.webkitEnterFullscreen === 'function' ? 'available' : 'MISSING');
+    row(stateTbl, 'protocol', location.protocol);
+    row(stateTbl, 'userAgent', navigator.userAgent);
+  }
+  paintState();
+  setInterval(paintState, 700);
+
+  // --- codec probes --------------------------------------------------------
+  const codecTbl = document.getElementById('codec');
+  [['video/mp4', 'container only'],
+   ['video/mp4; codecs="avc1.64001f"', 'H.264 High 3.1 — what this file is'],
+   ['video/mp4; codecs="avc1.42E01E"', 'H.264 Baseline 3.0'],
+   ['video/mp4; codecs="avc1.64001f, mp4a.40.2"', 'High 3.1 + AAC-LC — exact pair'],
+   ['audio/mp4; codecs="mp4a.40.2"', 'AAC-LC']
+  ].forEach(([type, label]) => {
+    const r = v.canPlayType(type);
+    row(codecTbl, label, r === '' ? 'NO ("")' : r, r === '' ? 'bad' : 'good');
+  });
+
+  // --- play buttons --------------------------------------------------------
+  function attempt(muted) {
+    log(`--- play(muted=${muted}) from tap; readyState=${v.readyState} ---`);
+    v.muted = muted;
+    const p = v.play();
+    if (p && p.then) {
+      p.then(() => log(`play() RESOLVED — playing, muted=${v.muted}`))
+       .catch((e) => log(`play() REJECTED: ${e.name}: ${e.message}`));
+    } else {
+      log('play() returned no promise (old WebKit)');
+    }
+    if (typeof v.webkitEnterFullscreen === 'function' && v.readyState >= 1) {
+      try { v.webkitEnterFullscreen(); log('webkitEnterFullscreen() called'); }
+      catch (e) { log(`webkitEnterFullscreen THREW: ${e.name}: ${e.message}`); }
+    } else {
+      log(`skipped iOS fullscreen (fn=${typeof v.webkitEnterFullscreen}, readyState=${v.readyState})`);
+    }
+  }
+  document.getElementById('go').addEventListener('click', () => attempt(false));
+  document.getElementById('goMuted').addEventListener('click', () => attempt(true));
+
+  // --- network check -------------------------------------------------------
+  document.getElementById('netbtn').addEventListener('click', async () => {
+    const netTbl = document.getElementById('net');
+    netTbl.innerHTML = '';
+    const url = new URL('assets/splash.mp4', location.href).href;
+    row(netTbl, 'url', url);
+    log('network check: fetching first 1 KB');
+    try {
+      const t0 = performance.now();
+      const res = await fetch(url, { headers: { Range: 'bytes=0-1023' } });
+      const buf = await res.arrayBuffer();
+      const ms = Math.round(performance.now() - t0);
+      row(netTbl, 'status', `${res.status} ${res.statusText}`, res.status === 206 || res.status === 200 ? 'good' : 'bad');
+      row(netTbl, 'content-type', res.headers.get('content-type') || '(none)');
+      row(netTbl, 'content-range', res.headers.get('content-range') || '(none — no Range support)');
+      row(netTbl, 'bytes received', `${buf.byteLength} in ${ms}ms`);
+      const sig = new Uint8Array(buf.slice(4, 12));
+      row(netTbl, 'file signature', String.fromCharCode(...sig),
+        String.fromCharCode(...sig).startsWith('ftyp') ? 'good' : 'bad');
+      log(`network check OK: ${res.status}, ${buf.byteLength} bytes`);
+    } catch (e) {
+      row(netTbl, 'FETCH FAILED', `${e.name}: ${e.message}`, 'bad');
+      log(`network check FAILED: ${e.name}: ${e.message}`);
+    }
+  });
+
+  // --- copy ----------------------------------------------------------------
+  document.getElementById('copy').addEventListener('click', async () => {
+    const dump = [];
+    document.querySelectorAll('h2').forEach((h) => {
+      const next = h.nextElementSibling;
+      dump.push(`\n== ${h.textContent} ==`);
+      let n = next;
+      while (n && n.tagName !== 'H2') {
+        if (n.tagName === 'TABLE') {
+          n.querySelectorAll('tr').forEach((tr) => {
+            dump.push(`  ${tr.cells[0].textContent}: ${tr.cells[1].textContent}`);
+          });
+        }
+        n = n.nextElementSibling;
+      }
+    });
+    dump.push('\n== LOG ==', logEl.textContent);
+    const text = dump.join('\n');
+    try {
+      await navigator.clipboard.writeText(text);
+      document.getElementById('copy').textContent = 'Copied — paste it back';
+    } catch {
+      // Clipboard needs HTTPS; over plain http fall back to selecting it.
+      logEl.textContent = text;
+      document.getElementById('copy').textContent = 'Could not copy — select the log above';
+    }
+  });
+
+  log(`loaded. UA=${navigator.userAgent}`);
+})();
+</script>
+</body>
+</html>

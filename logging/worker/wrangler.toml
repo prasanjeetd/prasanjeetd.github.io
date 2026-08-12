@@ -1,0 +1,43 @@
+name = "site-logs"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+# The R2 binding, and the first of the two deletion boundaries. This is the
+# ONLY bucket the Worker can address — there is deliberately no binding to
+# live-assist-audio, so no code path here can read or delete from it. That is
+# enforced by Cloudflare, not by our code.
+# Create the bucket once with:  wrangler r2 bucket create site-logs
+[[r2_buckets]]
+binding = "LOGS"
+bucket_name = "site-logs"
+
+# Two schedules on one Worker; `event.cron` tells them apart in scheduled().
+#   */10 — compact the loose per-request objects into one file per day
+#   19 3 — sweep, once a day, well away from the compaction minute
+[triggers]
+crons = ["*/10 * * * *", "19 3 * * *"]
+
+[vars]
+# Only these origins may post. Anything else gets no CORS headers and a 403,
+# so the endpoint cannot be used as a free dumping ground by other sites.
+# Add each new experiment site here — this is the only edit reuse requires.
+ALLOWED_ORIGINS = "https://www.prasanjeet.com,https://prasanjeet.com,https://prasanjeetd.github.io,http://localhost:5173,http://192.168.29.195:5173"
+
+# The second deletion boundary. Everything this Worker writes, reads, lists or
+# deletes lives under this prefix, and every key is re-checked against it right
+# before deletion. Anything else in the bucket is invisible to the sweeper, so
+# the bucket stays safe to share.
+ROOT_PREFIX = "logs/"
+
+# Logs get their own slice of the 10 GB account-wide free tier rather than the
+# whole thing, so they can never crowd out live-assist-audio in the same account.
+BUDGET_BYTES = "2147483648"
+
+# Sweep when usage crosses this fraction of BUDGET_BYTES, deleting oldest
+# first, down to LOW_WATER. The gap between the two stops the sweeper from
+# running on every single tick once it is near the line.
+SWEEP_AT = "0.85"
+LOW_WATER = "0.70"
+
+# Events older than this are dropped by the sweeper regardless of size.
+MAX_AGE_DAYS = "180"

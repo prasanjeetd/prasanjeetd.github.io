@@ -1,0 +1,19 @@
+# This repo is PUBLIC and is served publicly at www.prasanjeet.com.
+# Anything committed here is world-readable, and anything on main is downloadable.
+# Credentials must never land in it.
+secret/
+*.secret
+.env
+.env.*
+!.env.example
+
+# Tooling
+node_modules/
+.netlify/
+.wrangler/
+dist/
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -19,21 +19,36 @@
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-  // --- diagnostics: on-screen only, no endpoint to post to -----------------
+  // --- diagnostics ---------------------------------------------------------
+  // Two sinks. `?debug=1` draws an on-screen trace, which is what you use when
+  // the failing phone is in your hand. Everything also goes to the logging
+  // Worker, which is what you use when it is in someone else's — this page had
+  // no remote sink at all, so an iPhone that could not play the splash video
+  // reported nothing and the cause had to be inferred from the file instead.
   const DEBUG = /[?&]debug=1/.test(location.search);
   const dbg = DEBUG ? document.createElement('pre') : null;
   if (dbg) { dbg.id = 'dbg'; document.body.appendChild(dbg); }
   let seq = 0;
-  function log(event, data) {
+  function paint(event, data) {
     if (!dbg) return;
     dbg.textContent += `${++seq} ${event} ${JSON.stringify(data || {})}\n`;
   }
-  addEventListener('error', (e) => log('js:error', {
+  function log(event, data) {
+    if (window.slog) window.slog.event(event, data);
+    paint(event, data);
+  }
+  // Overlay only, deliberately: slog installs its own error and rejection
+  // handlers, so routing these through log() as well would file every crash
+  // twice in R2. paint() keeps them visible on screen without the duplicate.
+  addEventListener('error', (e) => paint('js:error', {
     msg: String(e.message), src: String(e.filename), line: e.lineno,
   }));
-  addEventListener('unhandledrejection', (e) => log('js:reject', { reason: String(e.reason) }));
+  addEventListener('unhandledrejection', (e) => paint('js:reject', { reason: String(e.reason) }));
 
-  log('pageview', { w: innerWidth, h: innerHeight, dpr: devicePixelRatio, isIOS });
+  // Not 'pageview' — slog.init() already sends one carrying the full device
+  // profile. This is the card-specific half, kept separate so the two do not
+  // collide in the logs.
+  log('card:ready', { w: innerWidth, h: innerHeight, dpr: devicePixelRatio, isIOS });
 
   // --- save ----------------------------------------------------------------
   function filename() {
@@ -230,7 +245,7 @@
   setTimeout(async () => {
     if (await saveCard('auto')) showToast('✓ Saved to your phone');
     warmShare();
-    // Warmed only after the card is up, so the 2.4 MB video never competes
+    // Warmed only after the card is up, so the 1.9 MB video never competes
     // with the card image for bandwidth. The element starts at
     // preload="metadata" rather than "none": iOS will not fetch media without
     // a gesture, so "none" left readyState at 0 on tap, which is what blocked

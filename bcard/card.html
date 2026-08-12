@@ -35,6 +35,17 @@
     <button id="close" aria-label="Close">&#10005;</button>
   </div>
 
+<script src="../logging/client/telemetry.js"></script>
+<script>
+  // Before card.js, so window.slog exists by the time it logs card:ready.
+  // Failing to load must not stop the card, hence the guard rather than a
+  // hard dependency.
+  if (window.slog) slog.init({
+    endpoint: 'https://site-logs.office-product-style.workers.dev',
+    site: 'prasanjeet.com',
+    stream: 'user',
+  });
+</script>
 <script src="card.js"></script>
 </body>
 </html>

@@ -66,7 +66,18 @@
 
   <div class="warn" id="warn" hidden></div>
 
+<script src="../logging/client/telemetry.js"></script>
 <script src="vendor/qrcode.min.js"></script>
+<script>
+  // Separate stream from the card: this page answers "did anyone reach the
+  // launcher, and did they go on to open the card", which is a different
+  // question from how the card itself behaved.
+  if (window.slog) slog.init({
+    endpoint: 'https://site-logs.office-product-style.workers.dev',
+    site: 'prasanjeet.com',
+    stream: 'qr',
+  });
+</script>
 <script>
   // This page is the launcher, so the QR must point at card.html — not at the
   // folder, which would resolve back here and make scanning a loop. Derived
